@@ -61,11 +61,13 @@ namespace MagpieExtension
             _currentGameObjectName = null;
         }
 
-        // Replaces the single `callvirt instance string object::ToString()` at
-        // IL_00dd (the one immediately following `callvirt Type object::GetType()`
-        // at IL_00d8) with a call to SafeTypeToString. We match the adjacent
-        // (GetType, ToString) pair so the transpile won't fire on any other
-        // ToString call should ONI's IL drift in a future update.
+        // Replaces the single `callvirt instance string object::ToString()` that
+        // immediately follows `callvirt Type object::GetType()` with a call to
+        // SafeTypeToString. The adjacency requirement keeps the match precise;
+        // we deliberately do NOT compare DeclaringType, because on U59 the raw
+        // IL shows Object::GetType/Object::ToString yet a DeclaringType ==
+        // typeof(object) check stopped matching -- Harmony's operand resolution
+        // evidently presents the members differently than the metadata ref.
         public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             var src = new List<CodeInstruction>(instructions);
@@ -76,11 +78,11 @@ namespace MagpieExtension
             bool matched = false;
             for (int i = 0; i < src.Count - 1; i++)
             {
-                if (!IsCallvirt(src[i], "GetType", typeof(object))) continue;
-                if (!IsCallvirt(src[i + 1], "ToString", typeof(object))) continue;
-                // Replace the ToString callvirt (operand: object::ToString)
-                // with a static call to SafeTypeToString(Type) -> string.
-                // Stack effect matches: pops Type, pushes string.
+                if (!IsNoArgCall(src[i], "GetType")) continue;
+                if (!IsNoArgCall(src[i + 1], "ToString")) continue;
+                // Replace the ToString callvirt with a static call to
+                // SafeTypeToString(Type) -> string. Stack effect matches:
+                // pops Type, pushes string.
                 src[i + 1] = new CodeInstruction(OpCodes.Call, safeTypeToString);
                 matched = true;
                 break;
@@ -88,22 +90,31 @@ namespace MagpieExtension
 
             if (!matched)
             {
+                // Dump the call sequence Harmony actually sees, so the log tells
+                // us what to match against next time instead of leaving us blind.
+                var calls = new List<string>();
+                foreach (var insn in src)
+                {
+                    if (insn.operand is MethodInfo m &&
+                        (insn.opcode == OpCodes.Call || insn.opcode == OpCodes.Callvirt))
+                        calls.Add((m.DeclaringType != null ? m.DeclaringType.Name : "?") + "." + m.Name);
+                }
                 Debug.LogWarning("[MagpieExtension/SaveCrashGuard] Transpiler did NOT find " +
                     "the GetType+ToString pattern in SaveLoadRoot.SaveWithoutTransform. " +
-                    "Save-crash guard is INACTIVE. ONI may have changed its IL.");
+                    "Save-crash guard is INACTIVE. Calls seen (" + calls.Count + "): " +
+                    string.Join(" | ", calls.ToArray()));
             }
 
             return src;
         }
 
-        private static bool IsCallvirt(CodeInstruction insn, string methodName, Type declaringType)
+        private static bool IsNoArgCall(CodeInstruction insn, string methodName)
         {
-            if (insn.opcode != OpCodes.Callvirt) return false;
+            if (insn.opcode != OpCodes.Callvirt && insn.opcode != OpCodes.Call) return false;
             var mi = insn.operand as MethodInfo;
             if (mi == null) return false;
             if (mi.Name != methodName) return false;
             if (mi.GetParameters().Length != 0) return false;
-            if (mi.DeclaringType != declaringType) return false;
             return true;
         }
 
