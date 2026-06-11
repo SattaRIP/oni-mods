@@ -1,0 +1,3 @@
+title: "Pacus Die Out Of Water"
+description: "Pacus take damage when out of water and eventually die.\n\nAffects all Pacu variants: standard, tropical, Gulp Fish, prehistoric — including babies and shelled eggs that hatch into fry.\n\nDefault: 1 HP/second damage in air, ~100 in-game seconds to kill a healthy adult. Pacus in 35 kg or more of any liquid are safe; below that they start losing health.\n\nUseful for population control without needing pokeshells, lava pits, or vacuum chambers."
+staticID: "PacusDieOutOfWater"

@@ -1,0 +1,3 @@
+dist/
+*.dll
+!*/lib/*.dll

@@ -1,0 +1,7 @@
+# either or both of VANILLA_ID, EXPANSION1_ID, ALL
+supportedContent: VANILLA_ID, EXPANSION1_ID
+# Game build last tested against
+minimumSupportedBuild: 719533
+version: "1.0.0"
+# Required for Harmony 2.0 DLL mods
+APIVersion: 2

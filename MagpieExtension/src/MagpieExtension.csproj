@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyName>MagpieExtension</AssemblyName>
+    <RootNamespace>MagpieExtension</RootNamespace>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <!-- Suppress missing XML doc warnings -->
+    <NoWarn>CS1591</NoWarn>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <!-- ONI game DLL references -->
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(ONI_PATH)/OxygenNotIncluded_Data/Managed/Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(ONI_PATH)/OxygenNotIncluded_Data/Managed/UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(ONI_PATH)/OxygenNotIncluded_Data/Managed/0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="PLib">
+      <HintPath>$(MOD_MAGPIE_PATH)/PLib.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <!-- Ronivans Legacy - Industrial Revolution (for HP conduit types) -->
+    <Reference Include="RonivansLegacy_ChemicalProcessing">
+      <HintPath>$(MOD_RONIVANS_PATH)/RonivansLegacy_ChemicalProcessing.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>

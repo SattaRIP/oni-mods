@@ -1,0 +1,117 @@
+================================================================
+ONI WIDER BRIDGE CRASH — DIAGNOSIS AND FIX PLAN
+Written 2026-06-03 ~01:30 while you were sleeping
+================================================================
+
+THE CRASH
+
+Two related IndexOutOfRangeException stack traces in Player.log:
+
+ 1. Constructable.OnSpawn_Patch1 (path 1) — fires when a wider
+    bridge enters its CONSTRUCTION phase. Stack ends in:
+      Diggable.IsDiggable(cell)
+      Constructable.<PlaceDiggables>b__0(offset_cell)
+      BuildingDef.RunOnArea(cell, orientation, callback)
+      Building.RunOnArea(callback)
+      Constructable.PlaceDiggables()
+      Constructable.OnSpawn_Patch1
+
+ 2. Diggable.OnCleanUp_Patch1 (path 2) — same exception, but fires
+    when ANY nearby dig job is destroyed. Loops on every dig event
+    once an under-construction wider bridge is in the world.
+
+The specific instance in your log: HPARailBridge2UnderConstruction
+at world position (0.50, 0.00, -10.50). That x≈0.5 is the right
+edge of column 0 — i.e. the building was placed with its anchor
+at the LEFT EDGE of the asteroid.
+
+ROOT CAUSE
+
+Wider bridges (4 cells wide, 5 cells wide) use centered cell
+offsets like [-1, 0, 1, 2] for 4-wide or [-2, -1, 0, 1, 2] for
+5-wide. When the player places one near the LEFT edge of the
+asteroid, the leftmost cell of the footprint lands at a column
+that doesn't exist in the world (column -1 or -2), and ONI's
+Grid array access throws IndexOutOfRangeException.
+
+This is a real bug in our config — vanilla 4-wide buildings
+(turbines, doors, etc.) either:
+ - use non-negative offsets so they extend only RIGHT of the
+   anchor, OR
+ - have placement validation that prevents anchor positions
+   where the footprint would go off-grid.
+
+We have neither.
+
+NOT RELATED to: the rotation work, the BridgeRotationHandler
+component, the Subscribe-based event handling, the cross-
+contamination cleanup. Those are orthogonal — this crash would
+hit even with the rotation code stripped out entirely.
+
+THREE FIX OPTIONS (pick one tomorrow)
+
+OPTION A — Change cell offsets to non-negative (cleanest, no
+Harmony):
+  In each Config's CreateBuildingDef, after CreateBuildingDef
+  call, override def.PlacementOffsets to be {(0,0), (1,0),
+  (2,0), (3,0)} for 4-wide. Side effect: building extends RIGHT
+  of the placement cursor instead of being centered on it.
+  Visual offset (BridgeHelpers.StretchKanim's offsetX) will
+  need a corresponding shift.
+
+OPTION B — Harmony prefix on Constructable.PlaceDiggables that
+catches the exception silently. Trivial in code but reintroduces
+the Harmony-dynamic-method crash family we just escaped. NOT
+RECOMMENDED.
+
+OPTION C — Harmony prefix on Diggable.IsDiggable that guards
+with Grid.IsValidCell and returns false for off-grid cells.
+Same Harmony risk as B but smaller surface area.
+
+I'd go A first. If we can't easily change anchor without
+breaking the rotation/stretch math, C as fallback.
+
+IMMEDIATE WORKAROUND FOR YOU
+
+The offending HPARailBridge2 at (0.50, 0.00, -10.50) is going
+to keep spamming the log every time a dig job completes nearby.
+When you load the save tomorrow:
+ 1. Activate Sandbox mode (or use Destroy tool if you have it)
+ 2. Demolish the under-construction wider bridge at that
+    location (left edge of the asteroid)
+ 3. Re-place it AWAY from any grid edge, with at least 2 cells
+    of clearance to the left
+ 4. ONI will stop spamming exceptions
+
+If you can't demolish it from the build menu, load an earlier
+manual save from before you placed it.
+
+CURRENT BUILD STATE (installed in mods/Local)
+
+ MagpieExtension/MagpieExtension.dll        19968 bytes, 01:22
+ MagpieExtensionRonivans/MagpieExtensionRonivans.dll  18944 bytes, 01:22
+
+ Folders clean — no cross-contamination
+ Rotation impl: transform.localRotation + always-X local stretch +
+   override anim.Rotation = 0 (per your suggestion)
+ Subscribe to GameHashes.Rotated (no Harmony patch on Rotatable)
+ OnSpawn body active and calls ApplyForCurrentOrientation
+
+You said the previous build was invisible — couldn't tell from
+the screenshots if the cross-contamination cleanup alone fixed
+that or if my code is still wrong. Test the 01:22 build first;
+the contamination was the likely culprit for ALL the
+invisibility chaos.
+
+REMAINING USER-FACING ISSUES (from your earlier list)
+
+ 1. Automation wire colors: red = no signal, green = signal
+    (you corrected pink → it's just red/green). Not addressed.
+ 2. Ribbon color behavior: undefined. Wait on observation.
+ 3. Rotation visual orientation: this build's experimental fix.
+    Test, report.
+ 4. Joint plates render as one tile in normal view: pragmatic
+    state we accepted, awaiting proper kanim symbol mapping.
+ 5. The crash above is a NEW issue surfaced today.
+
+================================================================
