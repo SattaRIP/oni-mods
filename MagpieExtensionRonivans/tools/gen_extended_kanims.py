@@ -240,7 +240,9 @@ def main():
 
     ronivans_anim = SRC.parent.parent
     for src_rel, base in (("DupesLogistics_anims/logistic_bridge", "logistic_bridge"),
-                          ("HighPressureApplications_anims/hpa_rail_bridge", "hpa_rail_bridge")):
+                          ("HighPressureApplications_anims/hpa_rail_bridge", "hpa_rail_bridge"),
+                          ("HighPressureApplications_anims/pressure_gas_bridge", "pressure_gas_bridge"),
+                          ("HighPressureApplications_anims/pressure_liquid_bridge", "pressure_liquid_bridge")):
         for w in (4, 5):
             generate_scaled(ronivans_anim / src_rel, base, w)
 

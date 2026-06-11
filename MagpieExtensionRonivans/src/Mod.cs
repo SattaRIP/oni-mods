@@ -52,6 +52,17 @@ namespace MagpieExtensionRonivans
             ModUtil.AddBuildingToPlanScreen("Conveyance", HPARailBridge3Config.ID,  SUBCATEGORY_CONVEYANCE, HPARailBridge2Config.ID);
             ModUtil.AddBuildingToPlanScreen("Conveyance", HPARailBridgeTile2Config.ID, SUBCATEGORY_CONVEYANCE, "HPA_SolidRailBridgeTile");
             ModUtil.AddBuildingToPlanScreen("Conveyance", HPARailBridgeTile3Config.ID, SUBCATEGORY_CONVEYANCE, HPARailBridgeTile2Config.ID);
+
+            // High Pressure gas/liquid bridges live in the HVAC / Plumbing menus,
+            // anchored after Ronivans' own HP bridge.
+            BUILDINGS.PLANSUBCATEGORYSORTING[HPGasBridge2Config.ID]    = "pipes";
+            BUILDINGS.PLANSUBCATEGORYSORTING[HPGasBridge3Config.ID]    = "pipes";
+            BUILDINGS.PLANSUBCATEGORYSORTING[HPLiquidBridge2Config.ID] = "pipes";
+            BUILDINGS.PLANSUBCATEGORYSORTING[HPLiquidBridge3Config.ID] = "pipes";
+            ModUtil.AddBuildingToPlanScreen("HVAC", HPGasBridge2Config.ID, "pipes", "HighPressureGasConduitBridge");
+            ModUtil.AddBuildingToPlanScreen("HVAC", HPGasBridge3Config.ID, "pipes", HPGasBridge2Config.ID);
+            ModUtil.AddBuildingToPlanScreen("Plumbing", HPLiquidBridge2Config.ID, "pipes", "HighPressureLiquidConduitBridge");
+            ModUtil.AddBuildingToPlanScreen("Plumbing", HPLiquidBridge3Config.ID, "pipes", HPLiquidBridge2Config.ID);
         }
 
         private static void RegisterStrings()
@@ -76,6 +87,22 @@ namespace MagpieExtensionRonivans
                 "Heavy-Duty Joint Plate (2-Tile Gap)",
                 "A 4-tile-long Heavy-Duty joint plate that lets one HD rail cross through walls with a 2-tile gap.",
                 "Carries Solid Materials through wall and floor tile without connecting to other rails.");
+            Add("HPGASBRIDGE2",
+                "High Pressure Gas Bridge (2-Tile Gap)",
+                "A 4-tile-long high pressure gas bridge that crosses a 2-tile gap.",
+                "Carries Gas at high pressure across other pipes without connecting to them.");
+            Add("HPGASBRIDGE3",
+                "High Pressure Gas Bridge (3-Tile Gap)",
+                "A 5-tile-long high pressure gas bridge that crosses a 3-tile gap.",
+                "Carries Gas at high pressure across other pipes without connecting to them.");
+            Add("HPLIQUIDBRIDGE2",
+                "High Pressure Liquid Bridge (2-Tile Gap)",
+                "A 4-tile-long high pressure liquid bridge that crosses a 2-tile gap.",
+                "Carries Liquid at high pressure across other pipes without connecting to them.");
+            Add("HPLIQUIDBRIDGE3",
+                "High Pressure Liquid Bridge (3-Tile Gap)",
+                "A 5-tile-long high pressure liquid bridge that crosses a 3-tile gap.",
+                "Carries Liquid at high pressure across other pipes without connecting to them.");
             Add("HPARAILBRIDGETILE3",
                 "Heavy-Duty Joint Plate (3-Tile Gap)",
                 "A 5-tile-long Heavy-Duty joint plate that lets one HD rail cross through walls with a 3-tile gap.",
