@@ -1,3 +1,3 @@
 title: "Magpie Bridge Extension"
-description: "Adds 2-cell and 3-cell gap bridge variants for: High Pressure Gas Pipes, High Pressure Liquid Pipes, Automation Wires, and Automation Ribbons.\n\nRequires: Magpie Bridge (Magpie Bridge鹊桥) and Ronivans Legacy – Industrial Revolution."
+description: "Adds 2-cell and 3-cell gap bridge variants for: Automation Wires, Automation Ribbons, and Conveyor Rails.\n\nCompanion to Magpie Bridge (Magpie Bridge鹊桥). High Pressure pipe/rail variants are in Magpie Bridge Extension – Ronivans."
 staticID: "MagpieExtension"

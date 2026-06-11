@@ -1,9 +1,7 @@
 using HarmonyLib;
 using KMod;
-using System;
 using System.Reflection;
 using TUNING;
-using UnityEngine;
 
 namespace MagpieExtension
 {
@@ -13,40 +11,13 @@ namespace MagpieExtension
         {
             base.OnLoad(harmony);
 
-            // Resolve Ronivans Legacy's HP registration API by reflection so we don't
-            // bind to it at compile time. If the mod isn't loaded, the patches simply
-            // skip via their [HarmonyPrepare] guards and the wire/ribbon bridges still
-            // work standalone.
-            try
-            {
-                var asm = AppDomain.CurrentDomain.GetAssemblies();
-                foreach (var a in asm)
-                {
-                    var t = a.GetType("RonivansLegacy_ChemicalProcessing.Content.Scripts.HighPressureConduitRegistration");
-                    if (t != null)
-                    {
-                        MagpieBridges.RegistrationType = t;
-                        MagpieBridges.RegisterMethod = t.GetMethod("RegisterHighPressureConduit", BindingFlags.Public | BindingFlags.Static);
-                        // Cache the internal HashSet fields too so the cleanup path
-                        // can manipulate them directly without going through Ronivans'
-                        // UnregisterHighPressureConduit method (whose reflection invoke
-                        // was tripping a Mono runtime UTF-8 decode failure).
-                        const BindingFlags F = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
-                        MagpieBridges.Field_AllHandles        = t.GetField("AllHighPressureConduitGOHandles", F);
-                        MagpieBridges.Field_HPA_GasBridge     = t.GetField("HPA_GasBridge", F);
-                        MagpieBridges.Field_HPA_LiquidBridge  = t.GetField("HPA_LiquidBridge", F);
-                        MagpieBridges.Field_All_GasBridge     = t.GetField("All_GasBridge", F);
-                        MagpieBridges.Field_All_LiquidBridge  = t.GetField("All_LiquidBridge", F);
-                        break;
-                    }
-                }
-                if (MagpieBridges.RegistrationType == null)
-                    Debug.Log("[MagpieExtension] Ronivans Legacy not detected -- HP bridge patches inactive (wire/ribbon bridges still load).");
-            }
-            catch (Exception ex)
-            {
-                Debug.LogWarning("[MagpieExtension] Failed to resolve Ronivans HP API: " + ex.Message);
-            }
+            // History: OnLoad used to resolve Ronivans Legacy's HP registration API
+            // by reflection and MagpieHPPatches.cs force-registered Magpie's normal
+            // gas/liquid bridges (qiguanqiao2/3, shuiguanqiao2/3) as HP-capable, so
+            // HP pipes could connect to them without damage. Removed 2026-06-11 at
+            // the user's request: HP content entering normal Magpie bridges should
+            // damage them, same as any other normal conduit (Ronivans' overpressure
+            // rules now apply unmodified). See git history for the old code.
 
             harmony.PatchAll(Assembly.GetExecutingAssembly());
         }
