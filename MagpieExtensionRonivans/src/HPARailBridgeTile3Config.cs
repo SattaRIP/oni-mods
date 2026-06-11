@@ -15,7 +15,7 @@ namespace MagpieExtensionRonivans
 
         public override BuildingDef CreateBuildingDef()
         {
-            if (BaseConfig == null) return null;
+            if (BaseConfig == null) return RonivansHelpers.CreateMissingDependencyDef(ID, 5, "hpa_rail_tile_bridge5_kanim");
             BuildingDef baseDef = BaseConfig.CreateBuildingDef();
             // hpa_rail_tile_bridge5_kanim: our 5-cell-wide recomposition of
             // Ronivans' art -- see HPARailBridgeTile2Config and

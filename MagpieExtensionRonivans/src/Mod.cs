@@ -32,6 +32,17 @@ namespace MagpieExtensionRonivans
             if (_added) return;
             _added = true;
 
+            // Ronivans' DLL can be absent for one boot while Steam reinstalls an
+            // update ("Latent reinstall" in Player.log). The configs registered
+            // placeholder deprecated defs in that case; keep them out of the
+            // plan screen too.
+            if (!RonivansHelpers.RonivansLoaded)
+            {
+                Debug.LogWarning("[MagpieExtensionRonivans] Ronivans Legacy not loaded -- "
+                                 + "skipping plan screen entries this boot.");
+                return;
+            }
+
             RegisterStrings();
 
             // Place six bridges in the Shipping > conveyancestructures section,
