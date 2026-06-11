@@ -59,6 +59,7 @@ namespace MagpieExtension
             BaseConfig.DoPostConfigureComplete(go);
             var link = go.GetComponent<LogicUtilityNetworkLink>();
             if (link != null) { link.link1 = new CellOffset(-2, 0); link.link2 = new CellOffset(2, 0); }
+            go.AddOrGet<WideLogicBridgeTinter>().isRibbon = true;
         }
     }
 }
