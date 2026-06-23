@@ -108,35 +108,35 @@ namespace MagpieExtension
                 "Conveyor Bridge (3-Tile Gap)",
                 "A 5-tile-long conveyor bridge that lets one rail cross over another with a 3-tile gap.",
                 "Carries Solid Materials across other rails without connecting to them.");
-            Add("LIQUIDCONDUITBRIDGE2",
+            Add("SHUIGUANQIAO2",
                 "Liquid Pipe Bridge (2-Tile Gap)",
                 "A 4-tile-long liquid pipe bridge that lets one pipe cross over another with a 2-tile gap.",
                 "Carries liquid across other pipes without connecting to them.");
-            Add("LIQUIDCONDUITBRIDGE3",
+            Add("SHUIGUANQIAO3",
                 "Liquid Pipe Bridge (3-Tile Gap)",
                 "A 5-tile-long liquid pipe bridge that lets one pipe cross over another with a 3-tile gap.",
                 "Carries liquid across other pipes without connecting to them.");
-            Add("GASCONDUITBRIDGE2",
+            Add("QIGUANQIAO2",
                 "Gas Pipe Bridge (2-Tile Gap)",
                 "A 4-tile-long gas pipe bridge that lets one pipe cross over another with a 2-tile gap.",
                 "Carries gas across other pipes without connecting to them.");
-            Add("GASCONDUITBRIDGE3",
+            Add("QIGUANQIAO3",
                 "Gas Pipe Bridge (3-Tile Gap)",
                 "A 5-tile-long gas pipe bridge that lets one pipe cross over another with a 3-tile gap.",
                 "Carries gas across other pipes without connecting to them.");
-            Add("WIREBRIDGE2",
+            Add("DIANXIANQIAO2",
                 "Wire Bridge (2-Tile Gap)",
                 "A 4-tile-long wire bridge that lets one power wire cross over another with a 2-tile gap.",
                 "Carries power across other wires without connecting their circuits.");
-            Add("WIREBRIDGE3",
+            Add("DIANXIANQIAO3",
                 "Wire Bridge (3-Tile Gap)",
                 "A 5-tile-long wire bridge that lets one power wire cross over another with a 3-tile gap.",
                 "Carries power across other wires without connecting their circuits.");
-            Add("WIREREFINEDBRIDGE2",
+            Add("DAOXIANQIAO2",
                 "Conductive Wire Bridge (2-Tile Gap)",
                 "A 4-tile-long conductive wire bridge that lets one conductive wire cross over another with a 2-tile gap.",
                 "Carries high-wattage power across other wires without connecting their circuits.");
-            Add("WIREREFINEDBRIDGE3",
+            Add("DAOXIANQIAO3",
                 "Conductive Wire Bridge (3-Tile Gap)",
                 "A 5-tile-long conductive wire bridge that lets one conductive wire cross over another with a 3-tile gap.",
                 "Carries high-wattage power across other wires without connecting their circuits.");

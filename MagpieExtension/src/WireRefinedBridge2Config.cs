@@ -7,14 +7,14 @@ namespace MagpieExtension
     // Standalone 2-tile-gap (4-wide) Conductive Wire Bridge.
     public class WireRefinedBridge2Config : IBuildingConfig
     {
-        public const string ID = "WireRefinedBridge2";
+        public const string ID = "daoxianqiao2"; // base-Magpie ID for seamless save migration
         private static readonly WireRefinedBridgeConfig BaseConfig = new WireRefinedBridgeConfig();
 
         public override BuildingDef CreateBuildingDef()
         {
             BuildingDef baseDef = BaseConfig.CreateBuildingDef();
             BuildingDef def = BuildingTemplates.CreateBuildingDef(
-                ID, 4, 1, "utilityelectricbridgeconductive4_kanim", 30, 30f,
+                ID, 4, 1, "utilityelectricbridgeconductive4_kanim", 30, 3f,
                 baseDef.Mass, baseDef.MaterialCategory, 1600f,
                 BuildLocationRule.WireBridge, BUILDINGS.DECOR.PENALTY.TIER0, NOISE_POLLUTION.NONE);
             def.ObjectLayer   = baseDef.ObjectLayer;

@@ -7,14 +7,14 @@ namespace MagpieExtension
     // Standalone 3-tile-gap (5-wide) Liquid Pipe Bridge.
     public class LiquidConduitBridge3Config : IBuildingConfig
     {
-        public const string ID = "LiquidConduitBridge3";
+        public const string ID = "shuiguanqiao3"; // base-Magpie ID for seamless save migration
         private static readonly LiquidConduitBridgeConfig BaseConfig = new LiquidConduitBridgeConfig();
 
         public override BuildingDef CreateBuildingDef()
         {
             BuildingDef baseDef = BaseConfig.CreateBuildingDef();
             BuildingDef def = BuildingTemplates.CreateBuildingDef(
-                ID, 5, 1, "utilityliquidbridge5_kanim", 30, 30f,
+                ID, 5, 1, "utilityliquidbridge5_kanim", 10, 3f,
                 baseDef.Mass, baseDef.MaterialCategory, 1600f,
                 BuildLocationRule.Conduit, BUILDINGS.DECOR.NONE, NOISE_POLLUTION.NONE);
             def.ObjectLayer       = baseDef.ObjectLayer;
@@ -36,6 +36,7 @@ namespace MagpieExtension
             return def;
         }
 
+        public override void ConfigureBuildingTemplate(GameObject go, Tag prefab_tag) { go.AddOrGet<ConduitBridge>().type = ConduitType.Liquid; }
         public override void DoPostConfigurePreview(BuildingDef def, GameObject go) { BaseConfig.DoPostConfigurePreview(def, go); }
         public override void DoPostConfigureUnderConstruction(GameObject go) { BaseConfig.DoPostConfigureUnderConstruction(go); }
         public override void DoPostConfigureComplete(GameObject go) { BaseConfig.DoPostConfigureComplete(go); }
