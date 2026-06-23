@@ -22,7 +22,13 @@ g.OUT_BASE = REPO / "anim" / "magpie_extended_anims"
 CACHE = REPO / "tools" / "vanilla_kanim_cache"
 
 def main():
-    for base in ("utilities_conveyorbridge", "logic_bridge", "logic_ribbon_bridge"):
+    bases = (
+        "utilities_conveyorbridge", "logic_bridge", "logic_ribbon_bridge",
+        # standalone power/plumbing bridges (vanilla art, natively 3-wide)
+        "utilityliquidbridge", "utilitygasbridge",
+        "utilityelectricbridge", "utilityelectricbridgeconductive",
+    )
+    for base in bases:
         for w in (4, 5):
             g.generate_scaled(CACHE / base, base, w)
 

@@ -28,6 +28,7 @@ namespace MagpieExtension
     {
         private const string SUBCATEGORY_WIRES      = "wires";
         private const string SUBCATEGORY_CONVEYANCE = "conveyancestructures";
+        private const string SUBCATEGORY_PIPES      = "pipes";
 
         private static bool _added;
         public static void Prefix()
@@ -50,6 +51,15 @@ namespace MagpieExtension
             BUILDINGS.PLANSUBCATEGORYSORTING[LogicRibbonBridge3Config.ID]    = SUBCATEGORY_WIRES;
             BUILDINGS.PLANSUBCATEGORYSORTING[SolidConduitBridge2Config.ID]   = SUBCATEGORY_CONVEYANCE;
             BUILDINGS.PLANSUBCATEGORYSORTING[SolidConduitBridge3Config.ID]   = SUBCATEGORY_CONVEYANCE;
+            // Standalone plumbing/power bridges: pipes under Plumbing/HVAC, wires under Power.
+            BUILDINGS.PLANSUBCATEGORYSORTING[LiquidConduitBridge2Config.ID]  = SUBCATEGORY_PIPES;
+            BUILDINGS.PLANSUBCATEGORYSORTING[LiquidConduitBridge3Config.ID]  = SUBCATEGORY_PIPES;
+            BUILDINGS.PLANSUBCATEGORYSORTING[GasConduitBridge2Config.ID]     = SUBCATEGORY_PIPES;
+            BUILDINGS.PLANSUBCATEGORYSORTING[GasConduitBridge3Config.ID]     = SUBCATEGORY_PIPES;
+            BUILDINGS.PLANSUBCATEGORYSORTING[WireBridge2Config.ID]           = SUBCATEGORY_WIRES;
+            BUILDINGS.PLANSUBCATEGORYSORTING[WireBridge3Config.ID]           = SUBCATEGORY_WIRES;
+            BUILDINGS.PLANSUBCATEGORYSORTING[WireRefinedBridge2Config.ID]    = SUBCATEGORY_WIRES;
+            BUILDINGS.PLANSUBCATEGORYSORTING[WireRefinedBridge3Config.ID]    = SUBCATEGORY_WIRES;
 
             // 4-arg overload: (category, building_id, subcategoryID, relativeBuildingId).
             ModUtil.AddBuildingToPlanScreen("Automation", LogicWireBridge2Config.ID,    SUBCATEGORY_WIRES,      "LogicWireBridge");
@@ -60,6 +70,16 @@ namespace MagpieExtension
             // "Shipping" is only the display label in the bottom bar UI.
             ModUtil.AddBuildingToPlanScreen("Conveyance", SolidConduitBridge2Config.ID, SUBCATEGORY_CONVEYANCE, "SolidConduitBridge");
             ModUtil.AddBuildingToPlanScreen("Conveyance", SolidConduitBridge3Config.ID, SUBCATEGORY_CONVEYANCE, SolidConduitBridge2Config.ID);
+
+            // Standalone vanilla-style bridges, each next to its 1-tile counterpart.
+            ModUtil.AddBuildingToPlanScreen("Plumbing", LiquidConduitBridge2Config.ID, SUBCATEGORY_PIPES, "LiquidConduitBridge");
+            ModUtil.AddBuildingToPlanScreen("Plumbing", LiquidConduitBridge3Config.ID, SUBCATEGORY_PIPES, LiquidConduitBridge2Config.ID);
+            ModUtil.AddBuildingToPlanScreen("HVAC",     GasConduitBridge2Config.ID,    SUBCATEGORY_PIPES, "GasConduitBridge");
+            ModUtil.AddBuildingToPlanScreen("HVAC",     GasConduitBridge3Config.ID,    SUBCATEGORY_PIPES, GasConduitBridge2Config.ID);
+            ModUtil.AddBuildingToPlanScreen("Power",    WireBridge2Config.ID,          SUBCATEGORY_WIRES, "WireBridge");
+            ModUtil.AddBuildingToPlanScreen("Power",    WireBridge3Config.ID,          SUBCATEGORY_WIRES, WireBridge2Config.ID);
+            ModUtil.AddBuildingToPlanScreen("Power",    WireRefinedBridge2Config.ID,   SUBCATEGORY_WIRES, "WireRefinedBridge");
+            ModUtil.AddBuildingToPlanScreen("Power",    WireRefinedBridge3Config.ID,   SUBCATEGORY_WIRES, WireRefinedBridge2Config.ID);
         }
 
         private static void RegisterStrings()
@@ -88,6 +108,38 @@ namespace MagpieExtension
                 "Conveyor Bridge (3-Tile Gap)",
                 "A 5-tile-long conveyor bridge that lets one rail cross over another with a 3-tile gap.",
                 "Carries Solid Materials across other rails without connecting to them.");
+            Add("LIQUIDCONDUITBRIDGE2",
+                "Liquid Pipe Bridge (2-Tile Gap)",
+                "A 4-tile-long liquid pipe bridge that lets one pipe cross over another with a 2-tile gap.",
+                "Carries liquid across other pipes without connecting to them.");
+            Add("LIQUIDCONDUITBRIDGE3",
+                "Liquid Pipe Bridge (3-Tile Gap)",
+                "A 5-tile-long liquid pipe bridge that lets one pipe cross over another with a 3-tile gap.",
+                "Carries liquid across other pipes without connecting to them.");
+            Add("GASCONDUITBRIDGE2",
+                "Gas Pipe Bridge (2-Tile Gap)",
+                "A 4-tile-long gas pipe bridge that lets one pipe cross over another with a 2-tile gap.",
+                "Carries gas across other pipes without connecting to them.");
+            Add("GASCONDUITBRIDGE3",
+                "Gas Pipe Bridge (3-Tile Gap)",
+                "A 5-tile-long gas pipe bridge that lets one pipe cross over another with a 3-tile gap.",
+                "Carries gas across other pipes without connecting to them.");
+            Add("WIREBRIDGE2",
+                "Wire Bridge (2-Tile Gap)",
+                "A 4-tile-long wire bridge that lets one power wire cross over another with a 2-tile gap.",
+                "Carries power across other wires without connecting their circuits.");
+            Add("WIREBRIDGE3",
+                "Wire Bridge (3-Tile Gap)",
+                "A 5-tile-long wire bridge that lets one power wire cross over another with a 3-tile gap.",
+                "Carries power across other wires without connecting their circuits.");
+            Add("WIREREFINEDBRIDGE2",
+                "Conductive Wire Bridge (2-Tile Gap)",
+                "A 4-tile-long conductive wire bridge that lets one conductive wire cross over another with a 2-tile gap.",
+                "Carries high-wattage power across other wires without connecting their circuits.");
+            Add("WIREREFINEDBRIDGE3",
+                "Conductive Wire Bridge (3-Tile Gap)",
+                "A 5-tile-long conductive wire bridge that lets one conductive wire cross over another with a 3-tile gap.",
+                "Carries high-wattage power across other wires without connecting their circuits.");
         }
 
         private static void Add(string idUpper, string name, string desc, string effect)

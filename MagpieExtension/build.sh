@@ -23,8 +23,8 @@ mcs \
   -r:"$ONI_MANAGED/UnityEngine.InputLegacyModule.dll" \
   "$SCRIPT_DIR/src/"*.cs
 
-echo "==> Generating sprite assets..."
-python3 "$SCRIPT_DIR/generate_sprites.py"
+echo "==> Generating extended bridge kanims (vanilla art stretched to width)..."
+python3 "$SCRIPT_DIR/tools/gen_extended_kanims.py"
 
 echo "==> Packaging mod..."
 cp "$SCRIPT_DIR/mod.yaml" "$SCRIPT_DIR/dist/"
