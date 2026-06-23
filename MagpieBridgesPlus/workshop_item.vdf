@@ -1,10 +1,11 @@
 "workshopitem"
 {
-	"appid"           "457140"
-	"contentfolder"   "/home/mythraps/Documents/ONI_Mods/MagpieBridgesPlus/dist"
-	"previewfile"     "/home/mythraps/Documents/ONI_Mods/MagpieBridgesPlus/dist/preview.png"
-	"visibility"      "0"
-	"title"           "Magpie Bridges+"
-	"description"     "An English-language companion and extension pack for Magpie Bridge (鹊桥).\n\n[b]Adds[/b] 2-tile and 3-tile gap bridge variants for:\n[list]\n[*]Automation Wires\n[*]Automation Ribbons\n[*]Conveyor Rails\n[/list]\n...and, if you also run [b]Ronivans Legacy – Industrial Revolution[/b], its Logistic Solid, Heavy-Duty, and Heavy-Duty Joint Plate bridges (they appear automatically when that mod is present).\n\n[b]Fixes[/b] the base Magpie Bridge: renames its liquid / gas / wire / conductive-wire bridges to English and sorts every bridge into its correct build-menu category instead of the unlabelled 'Label' group.\n\n[b]Required Items:[/b] Magpie Bridge (鹊桥).\n[b]Optional:[/b] Ronivans Legacy – Industrial Revolution.\n\nThis mod contains only its author's own code; all base liquid/gas/wire bridges come from the required Magpie Bridge mod. Credits to the Magpie Bridge author and to Peter Han (PLib)."
-	"changenote"      "Initial release"
+	"appid"		"457140"
+	"contentfolder"		"/home/mythraps/Documents/ONI_Mods/MagpieBridgesPlus/dist"
+	"previewfile"		"/home/mythraps/Documents/ONI_Mods/MagpieBridgesPlus/dist/preview.png"
+	"visibility"		"0"
+	"title"		"Magpie Bridges+"
+	"description"		"An English-language companion and extension pack for Magpie Bridge (鹊桥).\n\n[b]Adds[/b] 2-tile and 3-tile gap bridge variants for:\n[list]\n[*]Automation Wires\n[*]Automation Ribbons\n[*]Conveyor Rails\n[/list]\n...and, if you also run [b]Ronivans Legacy – Industrial Revolution[/b], its Logistic Solid, Heavy-Duty, and Heavy-Duty Joint Plate bridges (they appear automatically when that mod is present).\n\n[b]Fixes[/b] the base Magpie Bridge: renames its liquid / gas / wire / conductive-wire bridges to English and sorts every bridge into its correct build-menu category instead of the unlabelled 'Label' group.\n\n[b]Required Items:[/b] Magpie Bridge (鹊桥).\n[b]Optional:[/b] Ronivans Legacy – Industrial Revolution.\n\nThis mod contains only its author's own code; all base liquid/gas/wire bridges come from the required Magpie Bridge mod. Credits to the Magpie Bridge author and to Peter Han (PLib)."
+	"changenote"		"Initial release"
+	"publishedfileid"		"3750518784"
 }
