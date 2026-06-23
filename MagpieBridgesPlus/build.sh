@@ -46,7 +46,8 @@ cp -r "$ROOT/MagpieExtension/dist/anim/."         "$DIST/anim/" 2>/dev/null || t
 cp -r "$ROOT/MagpieExtensionRonivans/dist/anim/." "$DIST/anim/" 2>/dev/null || true
 cp "$SCRIPT_DIR/mod.yaml"      "$DIST/"
 cp "$SCRIPT_DIR/mod_info.yaml" "$DIST/"
-# preview.png (if present) is left in dist/ for the Workshop uploader.
+# Workshop preview image (used by publish.sh / workshop_item.vdf).
+cp "$SCRIPT_DIR/preview.png"   "$DIST/" 2>/dev/null || true
 
 echo ""
 echo "=== Build complete. Contents of $DIST: ==="
