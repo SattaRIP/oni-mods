@@ -24,7 +24,7 @@ variants:
 Steam grabs it for you). Ronivans Legacy is optional.
 
 👉 **Steam Workshop:** <PASTE WORKSHOP LINK AFTER PUBLISHING>
-👉 **Source (MIT):** <PASTE GITHUB LINK>
+👉 **Source (MIT):** https://github.com/SattaRIP/oni-mods
 
 Free for everyone — if you'd like to support more mods like this, a pledge keeps
 the lights on. 💛 Bug reports and ideas welcome in the comments.
