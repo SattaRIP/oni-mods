@@ -24,9 +24,11 @@ CACHE = REPO / "tools" / "vanilla_kanim_cache"
 def main():
     bases = (
         "utilities_conveyorbridge", "logic_bridge", "logic_ribbon_bridge",
-        # standalone power/plumbing bridges (vanilla art, natively 3-wide)
+        # standalone plumbing bridges (vanilla art, natively 3-wide). These stretch
+        # cleanly. The wire-family bridges (utilityelectricbridge[conductive]) have
+        # round end-terminals that distort under uniform scaling, so they are widened
+        # separately by widen_wire_kanims.py (keep caps native, extend middle only).
         "utilityliquidbridge", "utilitygasbridge",
-        "utilityelectricbridge", "utilityelectricbridgeconductive",
     )
     for base in bases:
         for w in (4, 5):
