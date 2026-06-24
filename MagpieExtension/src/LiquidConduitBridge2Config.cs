@@ -37,7 +37,7 @@ namespace MagpieExtension
             return def;
         }
 
-        public override void ConfigureBuildingTemplate(GameObject go, Tag prefab_tag) { go.AddOrGet<ConduitBridge>().type = ConduitType.Liquid; }
+        public override void ConfigureBuildingTemplate(GameObject go, Tag prefab_tag) { GeneratedBuildings.MakeBuildingAlwaysOperational(go); go.AddOrGet<ConduitBridge>().type = ConduitType.Liquid; }
         public override void DoPostConfigurePreview(BuildingDef def, GameObject go) { BaseConfig.DoPostConfigurePreview(def, go); }
         public override void DoPostConfigureUnderConstruction(GameObject go) { BaseConfig.DoPostConfigureUnderConstruction(go); }
         public override void DoPostConfigureComplete(GameObject go) { BaseConfig.DoPostConfigureComplete(go); }
