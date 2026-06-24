@@ -32,6 +32,7 @@ def main():
         # TEMP: wire-family reverted to scaler for launch stability; widening
         # (widen_wire_kanims.py) caused an intermittent load crash. See TODO.md.
         "utilityelectricbridge", "utilityelectricbridgeconductive",
+        "utilityelectricbridgerubber",
     )
     for base in bases:
         for w in (4, 5):

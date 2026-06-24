@@ -60,6 +60,8 @@ namespace MagpieExtension
             BUILDINGS.PLANSUBCATEGORYSORTING[WireBridge3Config.ID]           = SUBCATEGORY_WIRES;
             BUILDINGS.PLANSUBCATEGORYSORTING[WireRefinedBridge2Config.ID]    = SUBCATEGORY_WIRES;
             BUILDINGS.PLANSUBCATEGORYSORTING[WireRefinedBridge3Config.ID]    = SUBCATEGORY_WIRES;
+            BUILDINGS.PLANSUBCATEGORYSORTING[WireRubberBridge2Config.ID]     = SUBCATEGORY_WIRES;
+            BUILDINGS.PLANSUBCATEGORYSORTING[WireRubberBridge3Config.ID]     = SUBCATEGORY_WIRES;
 
             // 4-arg overload: (category, building_id, subcategoryID, relativeBuildingId).
             ModUtil.AddBuildingToPlanScreen("Automation", LogicWireBridge2Config.ID,    SUBCATEGORY_WIRES,      "LogicWireBridge");
@@ -80,6 +82,8 @@ namespace MagpieExtension
             ModUtil.AddBuildingToPlanScreen("Power",    WireBridge3Config.ID,          SUBCATEGORY_WIRES, WireBridge2Config.ID);
             ModUtil.AddBuildingToPlanScreen("Power",    WireRefinedBridge2Config.ID,   SUBCATEGORY_WIRES, "WireRefinedBridge");
             ModUtil.AddBuildingToPlanScreen("Power",    WireRefinedBridge3Config.ID,   SUBCATEGORY_WIRES, WireRefinedBridge2Config.ID);
+            ModUtil.AddBuildingToPlanScreen("Power",    WireRubberBridge2Config.ID,    SUBCATEGORY_WIRES, "WireRubberBridge");
+            ModUtil.AddBuildingToPlanScreen("Power",    WireRubberBridge3Config.ID,    SUBCATEGORY_WIRES, WireRubberBridge2Config.ID);
         }
 
         private static void RegisterStrings()
@@ -140,6 +144,14 @@ namespace MagpieExtension
                 "Conductive Wire Bridge (3-Tile Gap)",
                 "A 5-tile-long conductive wire bridge that lets one conductive wire cross over another with a 3-tile gap.",
                 "Carries high-wattage power across other wires without connecting their circuits.");
+            Add("WIRERUBBERBRIDGE2",
+                "Insulated Conductive Wire Bridge (2-Tile Gap)",
+                "A 4-tile-long insulated conductive wire bridge that lets one wire cross over another with a 2-tile gap.",
+                "Carries high-wattage power across other wires without joining them. Can be run through tile.");
+            Add("WIRERUBBERBRIDGE3",
+                "Insulated Conductive Wire Bridge (3-Tile Gap)",
+                "A 5-tile-long insulated conductive wire bridge that lets one wire cross over another with a 3-tile gap.",
+                "Carries high-wattage power across other wires without joining them. Can be run through tile.");
         }
 
         private static void Add(string idUpper, string name, string desc, string effect)
