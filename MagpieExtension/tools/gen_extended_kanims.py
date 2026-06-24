@@ -29,6 +29,9 @@ def main():
         # round end-terminals that distort under uniform scaling, so they are widened
         # separately by widen_wire_kanims.py (keep caps native, extend middle only).
         "utilityliquidbridge", "utilitygasbridge",
+        # TEMP: wire-family reverted to scaler for launch stability; widening
+        # (widen_wire_kanims.py) caused an intermittent load crash. See TODO.md.
+        "utilityelectricbridge", "utilityelectricbridgeconductive",
     )
     for base in bases:
         for w in (4, 5):

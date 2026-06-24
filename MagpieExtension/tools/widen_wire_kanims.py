@@ -50,17 +50,22 @@ def generate(base, width):
     order=[bn.get(s['hash'],'?') for s in build['symbols']]
     NW=max(im.size[0] for im in sym_imgs.values())
     NH=sum(im.size[1] for im in sym_imgs.values())
-    newatlas=Image.new("RGBA",(NW,NH),(0,0,0,0)); ypos={}; y=0
+    def _pot(n):
+        p=1
+        while p<n: p*=2
+        return p
+    PW,PH=_pot(NW),_pot(NH)   # power-of-2 atlas (ONI/Unity-safe)
+    newatlas=Image.new("RGBA",(PW,PH),(0,0,0,0)); ypos={}; y=0
     for name in order:
         im=sym_imgs[name]; newatlas.paste(im,(0,y)); ypos[name]=(0,y,im.size[0],im.size[1]); y+=im.size[1]
-    # rewrite build: pivotW + UV per symbol
+    # rewrite build: pivotW + UV per symbol (UVs normalized to PoT atlas)
     nb=copy.deepcopy(build); nb['name']=f"{base}{width}"
     for s in nb['symbols']:
         name=bn.get(s['hash'],'?'); fr=s['frames'][0]
         px,py,pw,ph=ypos[name]
         fr[3+2]=new_pivotW[name]                 # pivotW (index 2 of floats)
-        fr[3+4]=px/NW; fr[3+5]=py/NH             # x1,y1
-        fr[3+6]=(px+pw)/NW; fr[3+7]=(py+ph)/NH   # x2,y2
+        fr[3+4]=px/PW; fr[3+5]=py/PH             # x1,y1
+        fr[3+6]=(px+pw)/PW; fr[3+7]=(py+ph)/PH   # x2,y2
     # anim unchanged (ma stays 1 -> renders at new pivotW, no terminal distortion)
     na=copy.deepcopy(anim); na['name']=f"{base}{width}"
     out=OUT/f"{base}{width}"; out.mkdir(parents=True,exist_ok=True)
@@ -71,6 +76,6 @@ def generate(base, width):
     return out
 
 if __name__=='__main__':
-    bases=sys.argv[1:] or ["utilityelectricbridge","utilityelectricbridgeconductive"]
+    bases=sys.argv[1:] or ["utilityelectricbridge","utilityelectricbridgeconductive","utilityelectricbridgerubber"]
     for b in bases:
         for w in (4,5): generate(b,w)

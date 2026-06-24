@@ -25,8 +25,6 @@ mcs \
 
 echo "==> Generating extended bridge kanims (vanilla art stretched to width)..."
 python3 "$SCRIPT_DIR/tools/gen_extended_kanims.py"
-echo "==> Widening wire-family bridge kanims (native end-caps, stretched middle)..."
-python3 "$SCRIPT_DIR/tools/widen_wire_kanims.py"
 
 echo "==> Packaging mod..."
 cp "$SCRIPT_DIR/mod.yaml" "$SCRIPT_DIR/dist/"

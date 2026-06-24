@@ -16,8 +16,16 @@
   mod-defined `KMonoBehaviour` to each building prefab — avoiding the spawn-path JIT
   failure. Source kept at `MagpieExtension/src/WideLogicBridgeTinter.cs` for reference.
 
-- [ ] **Wire-family bridge sprites distort when stretched.** Power Wire and
-  Conductive Wire long bridges use round end-terminals + a wavy wire; the uniform
-  horizontal stretch (`generate_scaled`) turns the terminals into ovals. Rework to
-  keep the end terminals at native size and extend only the middle (element-placement
-  approach, like `gen_extended_kanims.py`'s `generate()` for the rail-tile bridge).
+- [ ] **Wire-family bridge sprites distort when stretched (redo widening safely).**
+  Power Wire / Conductive Wire long bridges use round end-terminals + a wavy wire;
+  uniform `generate_scaled` ovals the terminals. `tools/widen_wire_kanims.py` fixes
+  the look (native caps, stretched middle) and the output validates clean — BUT
+  shipping it caused an **intermittent launch crash** (silent main-thread death →
+  template-precache thread abort; ~2/5 launches). Reverting the electric bases to
+  `generate_scaled` was rock-solid (5/5 clean). The trigger was the **custom
+  repacked atlas + rewritten build/UVs** (NOT texture size — the Ronivans HP bridges
+  are already 512×512 via copied atlases and are fine). So: keep `widen_wire_kanims.py`
+  but make it produce art the game's anim loader accepts reliably — likely add symbol
+  **bleed/padding** in the repacked atlas, match Klei's atlas packing more closely,
+  and/or avoid rewriting UVs (e.g. bake the widened image at the original atlas layout).
+  Currently the wire bridges ship with the mild oval-terminal look (scaler).
