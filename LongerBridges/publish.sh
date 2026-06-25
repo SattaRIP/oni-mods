@@ -1,5 +1,16 @@
 #!/usr/bin/env bash
-# Publish Magpie Bridges+ to Steam Workshop via steamcmd.
+# Publish Longer Bridges to Steam Workshop.
+#
+# !!! steamcmd DOES NOT WORK FOR ONI !!!
+# ONI exposes no steamcmd workshop depot for appid 457140 -- steamcmd fails with
+# "Upload workshop item ... failed (no workshop depot found)". It can create an
+# empty orphan item but cannot push content. This script is kept only for
+# reference. The WORKING method is ONI's in-game uploader:
+#   1. Deploy dist/ to  mods/Dev/LongerBridges/  (see build.sh).
+#   2. Launch ONI -> Mods -> Longer Bridges (Dev) -> "Upload Mod".
+#   3. ONI writes the PublishedFileId back; the item appears on your Workshop page.
+#
+# Original steamcmd flow (non-functional, left for posterity):
 #
 # Initial publish:
 #   ./publish.sh
