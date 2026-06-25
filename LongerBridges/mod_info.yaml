@@ -1,5 +1,7 @@
 # either or both of VANILLA_ID, EXPANSION1_ID, ALL
-supportedContent: VANILLA_ID, EXPANSION1_ID
+# ALL = compatible with every content config (base + all DLC packs). This mod
+# only adds gap variants of base utility bridges that exist in every config.
+supportedContent: ALL
 # The build number of the last version of the game you tested your mod with
 minimumSupportedBuild: 737790
 # An arbitrary string that will be displayed to users on the mod screen. is prepended with a "v" in the UI
