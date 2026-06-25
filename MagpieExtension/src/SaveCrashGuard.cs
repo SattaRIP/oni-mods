@@ -34,7 +34,15 @@ namespace MagpieExtension
     //   * The Player.log gains a "[MagpieExtension/SaveCrashGuard] ..." line
     //     identifying the offender every time it triggers, which is the
     //     debugging info we've been missing.
-    [HarmonyPatch(typeof(SaveLoadRoot), nameof(SaveLoadRoot.SaveWithoutTransform))]
+    // DISABLED 2026-06-24: this patch attaches to SaveLoadRoot.SaveWithoutTransform, which on
+    // U59 + this heavily-modded install corrupts into a dynamic-method that throws
+    // ExecutionEngineException ("String conversion error: Illegal byte sequence") during save.
+    // The transpiler is already INACTIVE here (the GetType+ToString pattern no longer matches on
+    // U59) and a managed catch() cannot catch ExecutionEngineException, so the guard protects
+    // nothing -- it only adds another patch to a method that's corrupting. Removing the patch
+    // (same approach as the WideLogicBridgeTinter fix) reduces the patch stack on that method.
+    // Re-enable + fix the transpiler for U59 if a genuine save crash returns. See TODO.md.
+    // [HarmonyPatch(typeof(SaveLoadRoot), nameof(SaveLoadRoot.SaveWithoutTransform))]
     public static class SaveLoadRoot_SaveWithoutTransform_Guard
     {
         // Tracks the GameObject currently being saved so the helper can name
