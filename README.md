@@ -6,6 +6,8 @@ mods. Everything here is my own code, MIT-licensed (see [LICENSE](LICENSE)).
 ## Mods
 
 ### Critter Turret
+[Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3756399185)
+
 A red robo-miner that **shoots critters instead of mining rock** — automatic,
 hands-off critter population control. Standalone.
 
