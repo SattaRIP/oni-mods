@@ -1,0 +1,3 @@
+title: "Critter Turret"
+description: "A red robo-miner reconfigured to shoot critters instead of mining rock.\n\nMounts on floor, wall, or ceiling and fires the duplicant multitool's attack laser within a directional arc (line-of-sight required) once the critter population in its room exceeds a threshold you set — culling surplus while maintaining your target population. A button on the turret selects what it fires at: Adults, Adults & Babies, or Babies.\n\nStandalone — no other mods required."
+staticID: "CritterTurret"
