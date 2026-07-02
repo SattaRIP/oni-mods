@@ -5,7 +5,25 @@ mods. Everything here is my own code, MIT-licensed (see [LICENSE](LICENSE)).
 
 ## Mods
 
+### Critter Turret
+A red robo-miner that **shoots critters instead of mining rock** — automatic,
+hands-off critter population control. Standalone.
+
+- **Population threshold side screen**: only opens fire while the critter count
+  in its room is above your target, then stands down.
+- **Age targeting**: a button on the turret cycles Adults / Adults & Babies /
+  Babies.
+- **Mounts on floor, wall, or ceiling** with a directional firing arc (line of
+  sight required), like the Robo-Miner.
+- Fires the **duplicant multitool's attack laser** (real beam particles and
+  sound); kills drop meat and resources normally.
+- **Logic port** to disable it from automation. Never targets Duplicants.
+
+Found in the **Shipping** menu next to the Robo-Miner. 120 W, refined metal.
+
 ### Longer Bridges
+[Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3751316059)
+
 A fully **standalone** bridge pack — no other mods required.
 
 - Adds **2-tile and 3-tile gap** bridge variants for **every** utility type:
@@ -48,11 +66,13 @@ build to produce them.
 ## Publishing
 
 ONI mods can't be published with `steamcmd` (it has no workshop depot for the
-game — it fails with "no workshop depot found"). Use ONI's **in-game uploader**:
-copy `LongerBridges/dist/` to `mods/Dev/LongerBridges/`, launch ONI, then
-**Mods → Longer Bridges (Dev) → Upload Mod**. The game writes the
-`PublishedFileId` back. `LongerBridges/publish.sh` documents this (the steamcmd
-path it contains is non-functional, kept for reference).
+game — it fails with "no workshop depot found"), and the Steam build of the
+game has **no in-game upload button** (that UI exists only on the WeGame/Rail
+platform). Use the free **Oxygen Not Included Uploader** Steam tool (AppID
+`636750`): point its content folder at the mod's `dist/` (which must contain
+`mod_info.yaml` and a 512×512 `preview.png`), set title/description/tags, and
+publish. Updates work the same way via its **Edit** button.
+`LongerBridges/publish.sh` is non-functional and kept for reference only.
 
 ## Credits
 
