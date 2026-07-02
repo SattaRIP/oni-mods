@@ -1,3 +1,4 @@
 dist/
 *.dll
 !*/lib/*.dll
+__pycache__/

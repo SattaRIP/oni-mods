@@ -38,6 +38,11 @@ namespace MagpieExtension
         public override void ConfigureBuildingTemplate(GameObject go, Tag prefab_tag) { BaseConfig.ConfigureBuildingTemplate(go, prefab_tag); }
         public override void DoPostConfigurePreview(BuildingDef def, GameObject go) { BaseConfig.DoPostConfigurePreview(def, go); }
         public override void DoPostConfigureUnderConstruction(GameObject go) { BaseConfig.DoPostConfigureUnderConstruction(go); }
-        public override void DoPostConfigureComplete(GameObject go) { BaseConfig.DoPostConfigureComplete(go); }
+        public override void DoPostConfigureComplete(GameObject go)
+        {
+            BaseConfig.DoPostConfigureComplete(go);
+            // Base hardcodes the link at +/-1; re-point it to this bridge's real ends.
+            BridgeLink.Repoint(go, new CellOffset(-1, 0), new CellOffset(2, 0));
+        }
     }
 }

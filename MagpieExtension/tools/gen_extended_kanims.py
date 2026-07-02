@@ -24,19 +24,21 @@ CACHE = REPO / "tools" / "vanilla_kanim_cache"
 def main():
     bases = (
         "utilities_conveyorbridge", "logic_bridge", "logic_ribbon_bridge",
-        # standalone plumbing bridges (vanilla art, natively 3-wide). These stretch
-        # cleanly. The wire-family bridges (utilityelectricbridge[conductive]) have
-        # round end-terminals that distort under uniform scaling, so they are widened
-        # separately by widen_wire_kanims.py (keep caps native, extend middle only).
+        # standalone plumbing bridges (vanilla art, natively 3-wide). Their
+        # continuous pipe art stretches cleanly under uniform scaling.
         "utilityliquidbridge", "utilitygasbridge",
-        # TEMP: wire-family reverted to scaler for launch stability; widening
-        # (widen_wire_kanims.py) caused an intermittent load crash. See TODO.md.
-        "utilityelectricbridge", "utilityelectricbridgeconductive",
-        "utilityelectricbridgerubber",
     )
     for base in bases:
         for w in (4, 5):
             g.generate_scaled(CACHE / base, base, w)
+
+    # Wire-family bridges (utilityelectricbridge[conductive|rubber]) have round
+    # end-terminals + a discrete middle wire. Uniform scaling ovals the terminals
+    # and leaves them off the wide socket cells, so they are composed from sliced
+    # sub-UV frames instead (caps native + centred on sockets, middle stretched),
+    # reusing the original atlas. See gen_wire_sliced.py.
+    import gen_wire_sliced
+    gen_wire_sliced.main()
 
 if __name__ == '__main__':
     main()

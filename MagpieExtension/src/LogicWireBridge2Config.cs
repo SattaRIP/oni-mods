@@ -59,7 +59,8 @@ namespace MagpieExtension
             BaseConfig.DoPostConfigureComplete(go);
             var link = go.GetComponent<LogicUtilityNetworkLink>();
             if (link != null) { link.link1 = new CellOffset(-1, 0); link.link2 = new CellOffset(2, 0); }
-            // TODO(tinter): disabled -- adding WideLogicBridgeTinter crashes spawn (Mono "Method has zero rva"); restore automation-overlay tinting via a safe mechanism (global manager, not a per-building KMonoBehaviour). See TODO.md. Was: go.AddOrGet<WideLogicBridgeTinter>().isRibbon = false;
+            // Automation-overlay signal tinting is handled globally by
+            // WideLogicBridgeManager (via LogicTintPatches) -- no per-building component.
         }
     }
 }
