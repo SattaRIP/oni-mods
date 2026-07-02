@@ -25,7 +25,7 @@ next to its one-tile counterpart.
 Bridge (鹊桥) setup, the switch is **seamless**: the liquid/gas/wire bridges you
 already placed keep working, no rebuild needed.
 
-👉 **Steam Workshop:** <PASTE WORKSHOP LINK AFTER PUBLISHING>
+👉 **Steam Workshop:** https://steamcommunity.com/sharedfiles/filedetails/?id=3751316059
 👉 **Source (MIT):** https://github.com/SattaRIP/oni-mods
 
 Free for everyone — if you'd like to support more mods like this, a pledge keeps
