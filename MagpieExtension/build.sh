@@ -21,6 +21,7 @@ mcs \
   -r:"$ONI_MANAGED/0Harmony.dll" \
   -r:"$ONI_MANAGED/netstandard.dll" \
   -r:"$ONI_MANAGED/UnityEngine.InputLegacyModule.dll" \
+  -r:"$ONI_MANAGED/UnityEngine.UI.dll" \
   "$SCRIPT_DIR/src/"*.cs
 
 echo "==> Generating extended bridge kanims (vanilla art stretched to width)..."

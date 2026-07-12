@@ -128,4 +128,42 @@ namespace MagpieExtensionRonivans
             Strings.Add(prefix + "EFFECT", effect);
         }
     }
+
+    // Same late re-glue pass as the base MagpieExtension DLL: other mods can
+    // insert next to our anchors after we do, splitting the gap variants away
+    // from their Ronivans counterparts. PlanScreen is created at world load,
+    // after every mod's build-menu edits, so repositioning here always sticks.
+    [HarmonyPatch(typeof(PlanScreen), "OnPrefabInit")]
+    public static class PlanScreen_OnPrefabInit_Patch
+    {
+        public static void Prefix()
+        {
+            if (!RonivansHelpers.RonivansLoaded) return;
+            Reposition("Conveyance", "LogisticBridge",              LogisticBridge2Config.ID);
+            Reposition("Conveyance", LogisticBridge2Config.ID,      LogisticBridge3Config.ID);
+            Reposition("Conveyance", "HPA_SolidRailBridge",         HPARailBridge2Config.ID);
+            Reposition("Conveyance", HPARailBridge2Config.ID,       HPARailBridge3Config.ID);
+            Reposition("Conveyance", "HPA_SolidRailBridgeTile",     HPARailBridgeTile2Config.ID);
+            Reposition("Conveyance", HPARailBridgeTile2Config.ID,   HPARailBridgeTile3Config.ID);
+            Reposition("HVAC",       "HighPressureGasConduitBridge", HPGasBridge2Config.ID);
+            Reposition("HVAC",       HPGasBridge2Config.ID,          HPGasBridge3Config.ID);
+            Reposition("Plumbing",   "HighPressureLiquidConduitBridge", HPLiquidBridge2Config.ID);
+            Reposition("Plumbing",   HPLiquidBridge2Config.ID,          HPLiquidBridge3Config.ID);
+        }
+
+        // Moves ourId's plan-menu entry to directly after anchorId, in the same
+        // per-category list ModUtil.AddBuildingToPlanScreen inserts into. No-op
+        // when either entry is missing; idempotent when already in place.
+        private static void Reposition(HashedString category, string anchorId, string ourId)
+        {
+            int ci = BUILDINGS.PLANORDER.FindIndex(p => p.category == category);
+            if (ci < 0) return;
+            var data = BUILDINGS.PLANORDER[ci].buildingAndSubcategoryData;
+            int oi = data.FindIndex(kv => kv.Key == ourId);
+            if (oi < 0 || data.FindIndex(kv => kv.Key == anchorId) < 0) return;
+            var entry = data[oi];
+            data.RemoveAt(oi);
+            data.Insert(data.FindIndex(kv => kv.Key == anchorId) + 1, entry);
+        }
+    }
 }

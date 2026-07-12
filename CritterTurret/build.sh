@@ -29,6 +29,8 @@ echo "==> Packaging mod..."
 cp "$SCRIPT_DIR/mod.yaml"      "$SCRIPT_DIR/dist/"
 cp "$SCRIPT_DIR/mod_info.yaml" "$SCRIPT_DIR/dist/"
 cp "$SCRIPT_DIR/preview.png"   "$SCRIPT_DIR/dist/"
+rm -rf "$SCRIPT_DIR/dist/anim"
+cp -r "$SCRIPT_DIR/anim"       "$SCRIPT_DIR/dist/"
 
 echo "==> Deploying to Dev/CritterTurret ..."
 rm -rf "$DEV"

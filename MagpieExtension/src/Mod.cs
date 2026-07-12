@@ -162,4 +162,49 @@ namespace MagpieExtension
             Strings.Add(prefix + "EFFECT", effect);
         }
     }
+
+    // Other mods (e.g. Ronivans' High Pressure conduits) also insert themselves
+    // right after the vanilla bridges during mod load; whichever mod runs later
+    // wins the slot, splitting our gap variants away from their vanilla
+    // counterparts. PlanScreen is created at world load, after every mod's
+    // build-menu edits, so re-gluing the variants to their anchors here always
+    // sticks (interlopers get pushed after our variants instead).
+    [HarmonyPatch(typeof(PlanScreen), "OnPrefabInit")]
+    public static class PlanScreen_OnPrefabInit_Patch
+    {
+        public static void Prefix()
+        {
+            Reposition("Automation", "LogicWireBridge",           LogicWireBridge2Config.ID);
+            Reposition("Automation", LogicWireBridge2Config.ID,   LogicWireBridge3Config.ID);
+            Reposition("Automation", "LogicRibbonBridge",         LogicRibbonBridge2Config.ID);
+            Reposition("Automation", LogicRibbonBridge2Config.ID, LogicRibbonBridge3Config.ID);
+            Reposition("Conveyance", "SolidConduitBridge",        SolidConduitBridge2Config.ID);
+            Reposition("Conveyance", SolidConduitBridge2Config.ID, SolidConduitBridge3Config.ID);
+            Reposition("Plumbing",   "LiquidConduitBridge",       LiquidConduitBridge2Config.ID);
+            Reposition("Plumbing",   LiquidConduitBridge2Config.ID, LiquidConduitBridge3Config.ID);
+            Reposition("HVAC",       "GasConduitBridge",          GasConduitBridge2Config.ID);
+            Reposition("HVAC",       GasConduitBridge2Config.ID,  GasConduitBridge3Config.ID);
+            Reposition("Power",      "WireBridge",                WireBridge2Config.ID);
+            Reposition("Power",      WireBridge2Config.ID,        WireBridge3Config.ID);
+            Reposition("Power",      "WireRefinedBridge",         WireRefinedBridge2Config.ID);
+            Reposition("Power",      WireRefinedBridge2Config.ID, WireRefinedBridge3Config.ID);
+            Reposition("Power",      "WireRubberBridge",          WireRubberBridge2Config.ID);
+            Reposition("Power",      WireRubberBridge2Config.ID,  WireRubberBridge3Config.ID);
+        }
+
+        // Moves ourId's plan-menu entry to directly after anchorId, in the same
+        // per-category list ModUtil.AddBuildingToPlanScreen inserts into. No-op
+        // when either entry is missing; idempotent when already in place.
+        private static void Reposition(HashedString category, string anchorId, string ourId)
+        {
+            int ci = BUILDINGS.PLANORDER.FindIndex(p => p.category == category);
+            if (ci < 0) return;
+            var data = BUILDINGS.PLANORDER[ci].buildingAndSubcategoryData;
+            int oi = data.FindIndex(kv => kv.Key == ourId);
+            if (oi < 0 || data.FindIndex(kv => kv.Key == anchorId) < 0) return;
+            var entry = data[oi];
+            data.RemoveAt(oi);
+            data.Insert(data.FindIndex(kv => kv.Key == anchorId) + 1, entry);
+        }
+    }
 }

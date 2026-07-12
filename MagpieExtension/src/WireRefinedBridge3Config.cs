@@ -36,8 +36,18 @@ namespace MagpieExtension
         }
 
         public override void ConfigureBuildingTemplate(GameObject go, Tag prefab_tag) { BaseConfig.ConfigureBuildingTemplate(go, prefab_tag); }
-        public override void DoPostConfigurePreview(BuildingDef def, GameObject go) { BaseConfig.DoPostConfigurePreview(def, go); }
-        public override void DoPostConfigureUnderConstruction(GameObject go) { BaseConfig.DoPostConfigureUnderConstruction(go); }
+        public override void DoPostConfigurePreview(BuildingDef def, GameObject go)
+        {
+            BaseConfig.DoPostConfigurePreview(def, go);
+            // The base adds the +/-1 link here too; without this the placement
+            // ghost draws its sockets one tile in from the terminals.
+            BridgeLink.Repoint(go, new CellOffset(-2, 0), new CellOffset(2, 0));
+        }
+        public override void DoPostConfigureUnderConstruction(GameObject go)
+        {
+            BaseConfig.DoPostConfigureUnderConstruction(go);
+            BridgeLink.Repoint(go, new CellOffset(-2, 0), new CellOffset(2, 0));
+        }
         public override void DoPostConfigureComplete(GameObject go)
         {
             BaseConfig.DoPostConfigureComplete(go);

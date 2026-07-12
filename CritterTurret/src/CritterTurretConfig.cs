@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using TUNING;
 using UnityEngine;
 using BUILDINGS = TUNING.BUILDINGS;
@@ -17,7 +18,7 @@ namespace CritterTurret
         public override BuildingDef CreateBuildingDef()
         {
             BuildingDef def = BuildingTemplates.CreateBuildingDef(
-                ID, 2, 2, "auto_miner_kanim", 10, 10f,
+                ID, 2, 2, "critterturret_kanim", 10, 10f,
                 BUILDINGS.CONSTRUCTION_MASS_KG.TIER3, MATERIALS.REFINED_METALS, 1600f,
                 BuildLocationRule.OnFoundationRotatable, BUILDINGS.DECOR.PENALTY.TIER2,
                 NOISE_POLLUTION.NOISY.TIER0, 0.2f);
@@ -35,6 +36,73 @@ namespace CritterTurret
         public override void ConfigureBuildingTemplate(GameObject go, Tag prefab_tag)
         {
             go.AddOrGet<Operational>();
+
+            // Species checklist -- the same TreeFilterableSideScreen the Critter
+            // Drop-Off shows. The screen requires a Storage on the target and reads
+            // its storageFilters for the category rows; this Storage never actually
+            // stores anything (nothing ever fetches to it). Rows list every
+            // DISCOVERED species under each category, so wranglable land critters
+            // and catchable fish all show up; the brain checks targets against
+            // TreeFilterable's accepted tags.
+            Storage storage = go.AddOrGet<Storage>();
+            storage.allowItemRemoval = false;
+            storage.showDescriptor = false;
+            storage.allowSettingOnlyFetchMarkedItems = false;
+            storage.storageFilters = new List<Tag>
+            {
+                GameTags.BagableCreature,
+                GameTags.SwimmingCreature,
+                CritterTurretTags.OtherCritters
+            };
+
+            TreeFilterable filterable = go.AddOrGet<TreeFilterable>();
+            // Storage bins tint themselves + raise "no storage filter set" when
+            // nothing is checked; on a turret that state just means "hold fire at
+            // listed species", so keep the building's normal look.
+            filterable.tintOnNoFiltersSet = false;
+            // Would prune accepted tags against the category table on spawn; our
+            // OtherCritters category registers per-game after load, so pruning
+            // could race it and silently drop saved selections.
+            filterable.filterByStorageCategoriesOnSpawn = false;
+        }
+
+        // The turret's kanim has red baked into the atlas, which fights ONI's
+        // placement feedback: the drag preview is tinted by multiplication (white =
+        // valid, red = invalid), and red art times white tint still reads as red.
+        // Give just the preview the vanilla grey Auto-Miner art so valid/invalid
+        // placement shows normally; the menu icon and built turret stay red.
+        // NOTE: the preview/under-construction prefabs' anim controllers are already
+        // initialized (Util.PreInit inside BuildingLoader.CreateBuilding*) by the time
+        // these hooks run, so just assigning AnimFiles does nothing -- SwapAnims is the
+        // rebuild-and-rebind path.
+        private static void SwapToVanillaAnim(GameObject go, string context)
+        {
+            try
+            {
+                var kbac = go.GetComponent<KBatchedAnimController>();
+                KAnimFile vanilla = Assets.GetAnim("auto_miner_kanim");
+                if (kbac == null || vanilla == null)
+                {
+                    Debug.LogWarning("[CritterTurret] " + context + " anim swap skipped (controller=" + (kbac != null) + ", anim=" + (vanilla != null) + ")");
+                    return;
+                }
+                kbac.SwapAnims(new KAnimFile[] { vanilla });
+                Debug.Log("[CritterTurret] " + context + " anim swapped to vanilla auto_miner for placement tinting");
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning("[CritterTurret] " + context + " anim swap failed (stays red): " + e);
+            }
+        }
+
+        public override void DoPostConfigurePreview(BuildingDef def, GameObject go)
+        {
+            SwapToVanillaAnim(go, "preview");
+        }
+
+        public override void DoPostConfigureUnderConstruction(GameObject go)
+        {
+            SwapToVanillaAnim(go, "under-construction");
         }
 
         public override void DoPostConfigureComplete(GameObject go)
@@ -42,11 +110,6 @@ namespace CritterTurret
             go.AddOrGet<LogicOperationalController>();
             // Plays the dupes' AttackLaser_gun loop while the turret is engaging.
             go.AddOrGet<LoopingSounds>();
-
-            // Prototype recolour: tint the orange Auto-Miner art toward red.
-            // (A proper recoloured kanim comes later.)
-            var kbac = go.GetComponent<KBatchedAnimController>();
-            if (kbac != null) kbac.TintColour = new Color(1f, 0.30f, 0.28f, 1f);
 
             // Range visual: a forward fan (trimmed by line of sight), shown when the
             // turret is selected -- same RangeVisualizer the Auto-Miner uses. Must match
