@@ -26,6 +26,7 @@ Bridge (鹊桥) setup, the switch is **seamless**: the liquid/gas/wire bridges y
 already placed keep working, no rebuild needed.
 
 👉 **Steam Workshop:** https://steamcommunity.com/sharedfiles/filedetails/?id=3751316059
+👉 **Nexus Mods:** [LINK AFTER UPLOADING]
 👉 **Source (MIT):** https://github.com/SattaRIP/oni-mods
 
 Free for everyone — if you'd like to support more mods like this, a pledge keeps

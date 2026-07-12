@@ -27,6 +27,7 @@ Find it in the **Shipping** menu next to the Robo-Miner. 120 W, refined metal.
 **Fully standalone — no other mods required.**
 
 👉 **Steam Workshop:** https://steamcommunity.com/sharedfiles/filedetails/?id=3756399185
+👉 **Nexus Mods:** [LINK AFTER UPLOADING]
 👉 **Source (MIT):** https://github.com/SattaRIP/oni-mods
 
 Free for everyone — if you'd like to support more mods like this, a pledge keeps
