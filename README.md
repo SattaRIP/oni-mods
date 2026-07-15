@@ -24,6 +24,8 @@ hands-off critter population control. Standalone.
 Found in the **Shipping** menu next to the Robo-Miner. 120 W, refined metal.
 
 ### More Clothing
+[Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3765092134)
+
 Five new garments (merger of the former Protective Wear + Snazzy Swimwear
 projects into one mod).
 
