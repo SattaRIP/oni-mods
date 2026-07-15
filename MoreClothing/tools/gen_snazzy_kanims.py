@@ -82,27 +82,51 @@ def recolour_image(img, mode, seed):
             else:  # yellow_to_gold: rubber boots -> richer, deeper amber-gold
                 if is_yellow(h, s, v):
                     px[x, y] = rgb(BOOT_GOLD_H, min(0.97, BOOT_GOLD_S * (0.75 + 0.25 * v)), min(1, v * 0.97)) + (a,)
-    # gold accents
-    random.seed(seed)
+    # Gold accents: deliberate 4-point star sparkles, NOT per-pixel noise.
+    # (The first release scattered single random pixels -- incl. dark flecks --
+    # which players read as ONI's germ overlay: "covered in food-poisoning
+    # germs". Fewer, larger, bright-only sparkles read as ornament.)
+    rng = random.Random(seed)
     if mode == "tuxedo":
-        # scatter gold flecks/studs over the black leather for a formal look
-        for y in range(out.height):
-            for x in range(out.width):
-                r, g, b, a = px[x, y]
-                if a <= 10:
-                    continue
-                h, s, v = hsv(r, g, b)
-                if v < 0.45 and s < 0.35 and random.random() < 0.07:
-                    px[x, y] = (245, 205, 90, a) if random.random() < 0.6 else (190, 150, 40, a)
+        def eligible(x, y):
+            r, g, b, a = px[x, y]
+            if a <= 10:
+                return False
+            h, s, v = hsv(r, g, b)
+            return v < 0.45 and s < 0.35
+        stamp_sparkles(px, out.width, out.height, eligible, rng,
+                       bright=(255, 224, 130), mid=(210, 165, 60))
     else:
-        # sequin sparkle on the gold, like the Snazzy Suit
-        density = 0.09 if mode == "red_to_gold" else 0.11
-        for y in range(out.height):
-            for x in range(out.width):
-                r, g, b, a = px[x, y]
-                if a > 10 and is_gold(*hsv(r, g, b)) and random.random() < density:
-                    px[x, y] = (250, 240, 180, a) if random.random() < 0.6 else (120, 96, 20, a)
+        def eligible(x, y):
+            r, g, b, a = px[x, y]
+            return a > 10 and is_gold(*hsv(r, g, b))
+        stamp_sparkles(px, out.width, out.height, eligible, rng,
+                       bright=(255, 250, 215), mid=(255, 226, 140))
     return out
+
+
+def stamp_sparkles(px, w, h, eligible, rng, bright, mid, spacing=7):
+    """Stamp sparse 4-point star sparkles onto pixels passing `eligible`.
+
+    Centers come from a jittered grid (roughly one candidate per `spacing`^2
+    cell, over half of them skipped) so coverage is even but not lattice-like;
+    each sparkle is a plus-shape 3 or 5 px across, clipped to eligible pixels.
+    """
+    for gy in range(0, h, spacing):
+        for gx in range(0, w, spacing):
+            x = gx + rng.randrange(spacing)
+            y = gy + rng.randrange(spacing)
+            if x >= w or y >= h or not eligible(x, y) or rng.random() < 0.55:
+                continue
+            arm = 2 if rng.random() < 0.3 else 1
+            points = [(0, 0, bright)]
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                for k in range(1, arm + 1):
+                    points.append((dx * k, dy * k, mid if k == arm else bright))
+            for dx, dy, col in points:
+                nx, ny = x + dx, y + dy
+                if 0 <= nx < w and 0 <= ny < h and eligible(nx, ny):
+                    px[nx, ny] = col + (px[nx, ny][3],)
 
 
 def extract():
