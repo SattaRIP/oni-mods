@@ -72,8 +72,18 @@ def is_red(h, s, v):
 
 
 def recolour_eva(img, seed):
-    """Black wetsuit -> white/silver EVA fabric; red bands -> orange accents."""
-    from PIL import Image
+    """Black wetsuit -> yellow suit fabric; red bands -> orange accents.
+
+    Continuous per-pixel blending -- NO hard thresholds. The first version
+    used category cutoffs (is_red / s<0.28), so anti-aliased edge pixels fell
+    on either side of them and the suit came out speckled and blocky in game.
+    Here every pixel gets a smooth mix weighted by how red / how grey it is,
+    and the fabric brightening is a gamma curve (v**0.45) so dark outlines
+    stay dark instead of washing out flat.
+    """
+    def clamp01(x):
+        return 0.0 if x < 0 else (1.0 if x > 1 else x)
+
     out = img.convert("RGBA")
     px = out.load()
     for y in range(out.height):
@@ -82,16 +92,26 @@ def recolour_eva(img, seed):
             if a <= 10:
                 continue
             h, s, v = hsv(r, g, b)
-            if is_red(h, s, v):
-                # red trim -> orange EVA accent, keep the shading
-                nr, ng, nb = rgb(0.055, min(0.95, s), min(1.0, v * 1.05))
-            elif s < 0.28:
-                # greyscale suit body -> silver/white, preserving light->dark
-                nv = 0.58 + v * 0.40
-                nr, ng, nb = rgb(0.58, 0.05, nv)  # faint cool tint
-            else:
-                continue
-            px[x, y] = (nr, ng, nb, a)
+
+            # how red this pixel is (hue distance to 0, needs some saturation)
+            dh = min(h, 1.0 - h)
+            red_w = clamp01(1.0 - dh / 0.14) * clamp01(s / 0.30)
+            # how grey/unsaturated it is (full weight below s=0.15 so the
+            # near-black fabric recolours completely, fading out by s=0.30).
+            # The wetsuit fabric sits at v ~0.03-0.15 with the OUTLINES at
+            # v ~0.0, so lift the fabric with a value floor but keep a soft
+            # guard that leaves true black line art black.
+            dark_keep = clamp01((0.05 - v) / 0.03)
+            grey_w = clamp01((0.30 - s) / 0.15) * (1.0 - red_w) * (1.0 - dark_keep)
+
+            sr, sg, sb = rgb(0.135, 0.85, 0.55 + (v ** 0.6) * 0.42)  # yellow fabric
+            orr, org, orb = rgb(0.055, max(0.65, min(0.95, s)),
+                                min(1.0, v * 1.05))            # orange accent
+
+            nr = r * (1 - grey_w - red_w) + sr * grey_w + orr * red_w
+            ng = g * (1 - grey_w - red_w) + sg * grey_w + org * red_w
+            nb = b * (1 - grey_w - red_w) + sb * grey_w + orb * red_w
+            px[x, y] = (int(round(nr)), int(round(ng)), int(round(nb)), a)
     return out
 
 
