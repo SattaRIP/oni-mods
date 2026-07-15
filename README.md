@@ -23,6 +23,24 @@ hands-off critter population control. Standalone.
 
 Found in the **Shipping** menu next to the Robo-Miner. 120 W, refined metal.
 
+### More Clothing
+Five new garments (merger of the former Protective Wear + Snazzy Swimwear
+projects into one mod).
+
+- **Winter Coat** — a Warm Sweater rebuilt into a thicker insulated coat
+  (+30 Insulation), at the Clothing Refashionator.
+- **Soft Suit** — a lightweight, checkpoint-free Atmo Suit alternative:
+  cold/heat/radiation protection, sealed against airborne germs and wetness,
+  a big breath reserve dupes actually breathe from, fewer bathroom trips, and
+  a helmet that assembles piece by piece when surroundings turn dangerous.
+  No air tank — it delays suffocation rather than preventing it.
+- **Snazzy Swimwear** (+25 decor) and **Snazzy Rubber Boots** (+15 decor) —
+  gold-sequin Refashionator upgrades of the Bionic Booster Pack garments.
+- **Shoes** (+15 decor) — black-and-gold dress shoes spun at the Textile Loom.
+
+**Required:** none; standalone. The Soft Suit and Snazzy recipes use Bionic
+Booster Pack garments as ingredients; Winter Coat and Shoes are DLC-free.
+
 ### Longer Bridges
 [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3751316059)
 

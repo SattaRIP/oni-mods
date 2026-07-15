@@ -1,20 +1,22 @@
 #!/usr/bin/env bash
-# Build the Protective Wear ONI mod: recolour kanims, compile C#, package, deploy to Dev.
+# Build the More Clothing ONI mod (Protective Wear + Snazzy Swimwear merged):
+# recolour kanims, compile C#, package, deploy to Dev.
 set -e
 
 ONI_MANAGED="$HOME/.local/share/Steam/steamapps/common/OxygenNotIncluded/OxygenNotIncluded_Data/Managed"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DEV="$HOME/.config/unity3d/Klei/Oxygen Not Included/mods/Dev/ProtectiveWear"
+DEV="$HOME/.config/unity3d/Klei/Oxygen Not Included/mods/Dev/MoreClothing"
 VENV_PY="$HOME/.venvs/oni-kanim/bin/python"
 
 echo "==> Generating recoloured kanims..."
 "$VENV_PY" "$SCRIPT_DIR/tools/gen_protective_kanims.py"
+"$VENV_PY" "$SCRIPT_DIR/tools/gen_snazzy_kanims.py"
 
 echo "==> Compiling C#..."
 mkdir -p "$SCRIPT_DIR/dist"
 mcs \
   -target:library \
-  -out:"$SCRIPT_DIR/dist/ProtectiveWear.dll" \
+  -out:"$SCRIPT_DIR/dist/MoreClothing.dll" \
   -optimize+ \
   -langversion:7.2 \
   -r:"$ONI_MANAGED/Assembly-CSharp.dll" \
@@ -32,11 +34,11 @@ cp "$SCRIPT_DIR/mod_info.yaml" "$SCRIPT_DIR/dist/"
 rm -rf "$SCRIPT_DIR/dist/anim"
 cp -r "$SCRIPT_DIR/anim"       "$SCRIPT_DIR/dist/"
 
-echo "==> Deploying to Dev/ProtectiveWear ..."
+echo "==> Deploying to Dev/MoreClothing ..."
 rm -rf "$DEV"
 mkdir -p "$DEV"
 cp -r "$SCRIPT_DIR/dist/." "$DEV/"
 
 echo ""
 echo "=== Build + deploy complete. Dev mod at: $DEV ==="
-ls -1 "$DEV"
+ls "$DEV"

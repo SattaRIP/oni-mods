@@ -6,7 +6,10 @@ using UnityEngine;
 
 namespace ProtectiveWear
 {
-    public class ProtectiveWearMod : UserMod2
+    // Single mod entry point for all of More Clothing; the one PatchAll picks
+    // up every Harmony patch class in the assembly, including the Snazzy
+    // Swimwear namespace (whose own UserMod2 was removed in the merge).
+    public class MoreClothingMod : UserMod2
     {
         public override void OnLoad(Harmony harmony)
         {

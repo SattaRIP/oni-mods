@@ -6,14 +6,8 @@ using UnityEngine;
 
 namespace SnazzySwimwear
 {
-    public class SnazzySwimwearMod : UserMod2
-    {
-        public override void OnLoad(Harmony harmony)
-        {
-            base.OnLoad(harmony);
-            harmony.PatchAll(Assembly.GetExecutingAssembly());
-        }
-    }
+    // (Snazzy Swimwear's UserMod2 was removed in the More Clothing merge --
+    // MoreClothingMod in ProtectiveWearContent.cs does the single PatchAll.)
 
     // Names/descriptions for the two new equippables and their recipes.
     // Added before the DB is built so equipment lookup finds them.
