@@ -2,3 +2,4 @@ dist/
 *.dll
 !*/lib/*.dll
 __pycache__/
+vanilla_kanim_cache/
