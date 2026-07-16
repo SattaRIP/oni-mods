@@ -67,16 +67,19 @@ namespace ProtectiveWear
                     def.EffectImmunites.Add(eff);
             }
 
-            // Track wearers so the dynamic helmet appears in dangerous air.
+            // Track wearers so the dynamic helmet appears in dangerous air,
+            // and fill the SHOES slot with the suit's own hidden boots.
             System.Action<Equippable> baseEquip = def.OnEquipCallBack;
             System.Action<Equippable> baseUnequip = def.OnUnequipCallBack;
             def.OnEquipCallBack = (Equippable eq) =>
             {
                 baseEquip?.Invoke(eq);
                 EVAHelmetManager.OnEquip(eq);
+                EVABoots.OnSuitEquipped(eq);
             };
             def.OnUnequipCallBack = (Equippable eq) =>
             {
+                EVABoots.OnSuitUnequipped(eq);
                 EVAHelmetManager.OnUnequip(eq);
                 baseUnequip?.Invoke(eq);
             };

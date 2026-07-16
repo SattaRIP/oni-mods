@@ -43,7 +43,7 @@ namespace ProtectiveWear
         private const string MASK_TARGET = "snapto_goggles";
         private const int PRIORITY = 7;        // beat the worn-suit build override
         private const float INTERVAL = 0.15f;  // seconds per assembly step
-        private const float ARM_DELAY = 0.75f; // continuous danger required before assembly starts
+        private const float ARM_DELAY = 1.5f;  // continuous danger required before assembly starts
         private const float HOT_TEMP_K = 323.15f;  // 50 C -- seal the helmet in heat
         private const float RAD_THRESHOLD = 30f;    // rads -- seal the helmet in radiation
         private const int MAX_STAGE = 5;
@@ -311,7 +311,7 @@ namespace ProtectiveWear
             return false;
         }
 
-        private static GameObject GetWearer(Equippable eq)
+        internal static GameObject GetWearer(Equippable eq)
         {
             IAssignableIdentity assignee = eq != null ? eq.assignee : null;
             if (assignee == null) return null;

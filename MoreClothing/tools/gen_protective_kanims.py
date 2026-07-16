@@ -42,6 +42,10 @@ JOBS = {
     # station works on one of our recipes. Only the garment pixels matter --
     # the rest of the atlas (spools, bottles...) is never drawn from this copy.
     "super_snazzy_suit_alteration_station": ("refashion_rainbow", "rainbow"),
+    # Hidden companion boots the Soft Suit auto-equips into the SHOES slot;
+    # vanilla yellow rubber shifted to the suit's orange accent colour. The
+    # snapTo_foot symbol rides along, so worn feet show orange boots too.
+    "rubber_boots_item":        ("eva_boots_item", "boots"),
 }
 
 # MCU-style helmet assembly: pivot-shifted copies of the game's build-only
@@ -202,7 +206,23 @@ def recolour_rainbow(img, build):
     return out
 
 
-RECOLOUR = {"eva": recolour_eva, "warm": recolour_warm}
+def recolour_boots(img, seed):
+    """Yellow rubber -> the Soft Suit's orange accent, same formula as the
+    suit's own red->orange band recolour, so the built-in boots match."""
+    out = img.convert("RGBA")
+    px = out.load()
+    for y in range(out.height):
+        for x in range(out.width):
+            r, g, b, a = px[x, y]
+            if a <= 10:
+                continue
+            h, s, v = hsv(r, g, b)
+            if s > 0.25 and 0.06 < h < 0.22:
+                px[x, y] = rgb(0.055, max(0.65, min(0.95, s)), min(1.0, v * 1.05)) + (a,)
+    return out
+
+
+RECOLOUR = {"eva": recolour_eva, "warm": recolour_warm, "boots": recolour_boots}
 
 
 def extract(missing):

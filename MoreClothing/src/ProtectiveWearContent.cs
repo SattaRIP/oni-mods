@@ -31,14 +31,19 @@ namespace ProtectiveWear
             _added = true;
 
             Add(UpgradedWarmCoatConfig.ID, "Winter Coat",
-                "A Warm Sweater refashioned into a heavier insulated coat with markedly better cold protection.",
-                "Refashion a Warm Sweater into a thicker insulated coat that shrugs off the cold far better.",
+                "A Warm Sweater refashioned into a heavier insulated coat with markedly better cold protection. Handsomely tailored: a little room decor while worn.",
+                "Refashion a Warm Sweater into a thicker insulated coat that shrugs off the cold far better -- and looks good doing it.",
                 "Coat");
 
             Add(EVASuitConfig.ID, "Soft Suit",
-                "A lightweight sealed suit. No checkpoint required. Protection from cold, heat, radiation and airborne germs; keeps its wearer dry (no Sopping Wet or Soggy Feet) and shrugs off eye irritation; a large breath reserve and fewer bathroom breaks -- but no air tank, so it only delays suffocation.",
-                "Combine a Warm Sweater, Swimwear and reed fiber into a checkpoint-free Soft Suit: cold/heat/radiation/germ shielding, immunity to wet and eye-irritation effects, a big breath reserve, and slower bladder fill.",
+                "A lightweight sealed suit. No checkpoint required. Protection from cold, heat, radiation and airborne germs; keeps its wearer dry (no Sopping Wet or Soggy Feet) and shrugs off eye irritation; a large breath reserve and fewer bathroom breaks -- but no air tank, so it only delays suffocation. Covers head to toe: the suit's own boots fill the shoes slot while it's worn.",
+                "Combine a Warm Sweater, Swimwear, Rubber Boots and reed fiber into a checkpoint-free Soft Suit: cold/heat/radiation/germ shielding, immunity to wet and eye-irritation effects, a big breath reserve, slower bladder fill, and built-in boots.",
                 "Suit");
+
+            Add(EVASuitBootsConfig.ID, "Soft Suit Boots",
+                "The Soft Suit's built-in footwear. Comes with the suit, goes with the suit.",
+                "Part of the Soft Suit.",
+                "Boots");
         }
 
         private static void Add(string id, string name, string desc, string recipeDesc, string generic)
@@ -54,10 +59,11 @@ namespace ProtectiveWear
     }
 
     // Register the upgrade recipes at the Clothing Refashionator:
-    //   Warm Sweater             + 5 kg Reed Fiber              -> Upgraded Warm Coat
-    //   Warm Sweater + Swimwear  + 10 kg Reed Fiber             -> EVA Suit
+    //   Warm Sweater                            + 5 kg Reed Fiber  -> Upgraded Warm Coat
+    //   Warm Sweater + Swimwear + Rubber Boots  + 10 kg Reed Fiber -> EVA Suit
     // The material that made the base garments carries over for free, since the
-    // base garments are themselves ingredients.
+    // base garments are themselves ingredients. The boots justify the suit's
+    // built-in footwear (it fills the shoes slot while worn).
     [HarmonyPatch(typeof(ClothingAlterationStationConfig), "ConfigureRecipes")]
     public static class Refashionator_Recipes
     {
@@ -65,6 +71,7 @@ namespace ProtectiveWear
         private const string FIBER = "BasicFabric"; // Reed Fiber
         private const string WARM_SWEATER = "Warm_Vest";
         private const string SWIMWEAR = "DrySuit";
+        private const string BOOTS = "RubberBoots";
 
         public static void Postfix()
         {
@@ -78,6 +85,7 @@ namespace ProtectiveWear
             {
                 new ComplexRecipe.RecipeElement(WARM_SWEATER.ToTag(), 1f),
                 new ComplexRecipe.RecipeElement(SWIMWEAR.ToTag(), 1f),
+                new ComplexRecipe.RecipeElement(BOOTS.ToTag(), 1f),
                 new ComplexRecipe.RecipeElement(FIBER.ToTag(), 10f),
             });
         }

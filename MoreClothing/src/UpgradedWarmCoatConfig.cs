@@ -13,6 +13,7 @@ namespace ProtectiveWear
     public class UpgradedWarmCoatConfig : IEquipmentConfig
     {
         public const string ID = "UpgradedWarmCoat";
+        private const float DECOR = 10f;
 
         private readonly WarmVestConfig vanilla = new WarmVestConfig();
 
@@ -29,6 +30,21 @@ namespace ProtectiveWear
             // Extra cold/heat insulation on top of the sweater's base warmth.
             def.AttributeModifiers.Add(new AttributeModifier(
                 Db.Get().Attributes.Insulation.Id, 30f, "Upgraded Warm Coat", false));
+
+            // A handsome tailored coat: modest room decor while worn, via the
+            // same stackable wearer-decor helper the Snazzy garments use.
+            System.Action<Equippable> baseEquip = def.OnEquipCallBack;
+            System.Action<Equippable> baseUnequip = def.OnUnequipCallBack;
+            def.OnEquipCallBack = (Equippable eq) =>
+            {
+                baseEquip?.Invoke(eq);
+                SnazzySwimwear.SnazzyDecor.Add(eq, DECOR, "Winter Coat");
+            };
+            def.OnUnequipCallBack = (Equippable eq) =>
+            {
+                SnazzySwimwear.SnazzyDecor.Remove(eq);
+                baseUnequip?.Invoke(eq);
+            };
 
             return def;
         }

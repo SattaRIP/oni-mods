@@ -11,6 +11,7 @@ VENV_PY="$HOME/.venvs/oni-kanim/bin/python"
 echo "==> Generating recoloured kanims..."
 "$VENV_PY" "$SCRIPT_DIR/tools/gen_protective_kanims.py"
 "$VENV_PY" "$SCRIPT_DIR/tools/gen_snazzy_kanims.py"
+"$VENV_PY" "$SCRIPT_DIR/tools/gen_mannequin_kanim.py"
 
 echo "==> Compiling C#..."
 mkdir -p "$SCRIPT_DIR/dist"
@@ -30,7 +31,7 @@ mcs \
 echo "==> Packaging mod..."
 cp "$SCRIPT_DIR/mod.yaml"      "$SCRIPT_DIR/dist/"
 cp "$SCRIPT_DIR/mod_info.yaml" "$SCRIPT_DIR/dist/"
-[ -f "$SCRIPT_DIR/preview.png" ] && cp "$SCRIPT_DIR/preview.png" "$SCRIPT_DIR/dist/"
+for p in "$SCRIPT_DIR"/preview*.png; do [ -f "$p" ] && cp "$p" "$SCRIPT_DIR/dist/"; done
 rm -rf "$SCRIPT_DIR/dist/anim"
 cp -r "$SCRIPT_DIR/anim"       "$SCRIPT_DIR/dist/"
 
