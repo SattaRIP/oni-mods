@@ -52,17 +52,18 @@ namespace ProtectiveWear
             go.AddOrGet<DecorProvider>();
             go.AddOrGet<MannequinDecor>();
 
-            // Lets MannequinDecor swap the kanim's placeholder "torso" symbol
-            // for the displayed garment's worn torso art (same machinery that
-            // dresses dupes). Must be added at prefab time.
-            SymbolOverrideControllerUtil.AddToPrefab(go);
-
             go.GetComponent<KPrefabID>().AddTag(GameTags.Decoration, false);
             go.GetComponent<KPrefabID>().AddTag(GameTags.OrnamentDisplayer, false);
         }
 
         public override void DoPostConfigureComplete(GameObject go)
         {
+            // Lets MannequinDecor swap the kanim's placeholder "torso" symbol
+            // for the displayed garment's worn torso art (same machinery that
+            // dresses dupes). Must run here: it asserts that the building's
+            // KBatchedAnimController already exists, which isn't the case yet
+            // in ConfigureBuildingTemplate.
+            SymbolOverrideControllerUtil.AddToPrefab(go);
         }
     }
 
