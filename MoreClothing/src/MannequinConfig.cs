@@ -227,6 +227,29 @@ namespace ProtectiveWear
             Storage.MakeItemInvisible(hiddenOccupant, false, false);
             hiddenOccupant = null;
         }
+
+        // Re-hide after the receptacle's own occupant handling, which
+        // force-re-enables the occupant's anim controller (see patch below).
+        internal void ReapplyIconHide()
+        {
+            if (hiddenOccupant != null)
+                Storage.MakeItemInvisible(hiddenOccupant, true, false);
+        }
+    }
+
+    // SingleEntityReceptacle.PositionOccupyingObject ends with a hard
+    // enabled=false/enabled=true toggle on the occupant's anim controller
+    // (to force batch re-registration after moving it), which un-hides the
+    // displayed garment's item icon every time it runs. Re-apply the hide
+    // immediately afterwards on mannequins that are wearing their garment.
+    [HarmonyPatch(typeof(SingleEntityReceptacle), "PositionOccupyingObject")]
+    public static class Mannequin_PositionOccupyingObject_Patch
+    {
+        public static void Postfix(SingleEntityReceptacle __instance)
+        {
+            MannequinDecor md = __instance.GetComponent<MannequinDecor>();
+            if (md != null) md.ReapplyIconHide();
+        }
     }
 
     // Build-menu strings + placement (Furniture tab, right next to the Item
