@@ -37,7 +37,7 @@ namespace ProtectiveWear
 
             Add(EVASuitConfig.ID, "Soft Suit",
                 "A lightweight sealed suit. No checkpoint required. Protection from cold, heat, radiation and airborne germs; keeps its wearer dry (no Sopping Wet or Soggy Feet) and shrugs off eye irritation; a large breath reserve and fewer bathroom breaks -- but no air tank, so it only delays suffocation. Covers head to toe: the suit's own boots fill the shoes slot while it's worn.",
-                "Combine a Warm Sweater, Swimwear, Rubber Boots, an Oxygen Mask and reed fiber into a checkpoint-free Soft Suit: cold/heat/radiation/germ shielding, immunity to wet and eye-irritation effects, a big breath reserve, slower bladder fill, and built-in boots.",
+                "Combine a Warm Sweater, Swimwear, Rubber Boots, an Oxygen Mask and fiber into a checkpoint-free Soft Suit: cold/heat/radiation/germ shielding, immunity to wet and eye-irritation effects, a big breath reserve, slower bladder fill, and built-in boots.",
                 "Suit");
 
             Add(EVASuitBootsConfig.ID, "Soft Suit Boots",
@@ -58,41 +58,67 @@ namespace ProtectiveWear
         }
     }
 
+    // All fibers our clothing recipes accept interchangeably: vanilla Reed
+    // Fiber always, Feather Fiber when its DLC content is active, and Rayon
+    // Fiber when Ronivans Legacy (which adds it) is loaded. Resolved at
+    // recipe-registration time so absent materials never appear as dead
+    // ingredient options.
+    public static class Fibers
+    {
+        public static Tag[] Options()
+        {
+            List<Tag> tags = new List<Tag> { (Tag)"BasicFabric" };
+            if (DlcManager.IsAllContentSubscribed(DlcManager.DLC4))
+                tags.Add((Tag)"FeatherFabric");
+            if (System.Type.GetType(
+                    "Dupes_Industrial_Overhaul.Chemical_Processing.Chemicals.RayonFabricConfig, RonivansLegacy_ChemicalProcessing") != null)
+                tags.Add((Tag)"RayonFiber");
+            return tags.ToArray();
+        }
+    }
+
     // Register the upgrade recipes at the Clothing Refashionator:
-    //   Warm Sweater                                          + 5 kg Reed Fiber  -> Upgraded Warm Coat
-    //   Warm Sweater + Swimwear + Rubber Boots + Oxygen Mask  + 10 kg Reed Fiber -> EVA Suit
-    // The material that made the base garments carries over for free, since the
-    // base garments are themselves ingredients. The boots justify the suit's
-    // built-in footwear (it fills the shoes slot while worn).
+    //   Warm Sweater                                          + 5 kg fiber  -> Upgraded Warm Coat
+    //   Warm Sweater + Swimwear + Rubber Boots + Oxygen Mask  + 10 kg fiber -> EVA Suit
+    // (fiber = reed/feather/rayon, see Fibers). The material that made the
+    // base garments carries over for free, since the base garments are
+    // themselves ingredients. The boots justify the suit's built-in footwear
+    // (it fills the shoes slot while worn). Research: the coat sits with
+    // Textile Production ("Clothing", same tech as the Refashionator), the
+    // suit with Hazard Protection ("Suits").
     [HarmonyPatch(typeof(ClothingAlterationStationConfig), "ConfigureRecipes")]
     public static class Refashionator_Recipes
     {
         private const string STATION = "ClothingAlterationStation";
-        private const string FIBER = "BasicFabric"; // Reed Fiber
         private const string WARM_SWEATER = "Warm_Vest";
         private const string SWIMWEAR = "DrySuit";
         private const string BOOTS = "RubberBoots";
         private const string MASK = "Oxygen_Mask";
 
+        public const string TECH_TEXTILES = "Clothing"; // Textile Production
+        public const string TECH_HAZARD = "Suits";      // Hazard Protection
+
         public static void Postfix()
         {
-            AddRecipe(UpgradedWarmCoatConfig.ID, new[]
+            Tag[] fibers = Fibers.Options();
+
+            AddRecipe(UpgradedWarmCoatConfig.ID, TECH_TEXTILES, new[]
             {
                 new ComplexRecipe.RecipeElement(WARM_SWEATER.ToTag(), 1f),
-                new ComplexRecipe.RecipeElement(FIBER.ToTag(), 5f),
+                new ComplexRecipe.RecipeElement(fibers, 5f),
             });
 
-            AddRecipe(EVASuitConfig.ID, new[]
+            AddRecipe(EVASuitConfig.ID, TECH_HAZARD, new[]
             {
                 new ComplexRecipe.RecipeElement(WARM_SWEATER.ToTag(), 1f),
                 new ComplexRecipe.RecipeElement(SWIMWEAR.ToTag(), 1f),
                 new ComplexRecipe.RecipeElement(BOOTS.ToTag(), 1f),
                 new ComplexRecipe.RecipeElement(MASK.ToTag(), 1f),
-                new ComplexRecipe.RecipeElement(FIBER.ToTag(), 10f),
+                new ComplexRecipe.RecipeElement(fibers, 10f),
             });
         }
 
-        private static void AddRecipe(string outputId, ComplexRecipe.RecipeElement[] input)
+        private static void AddRecipe(string outputId, string tech, ComplexRecipe.RecipeElement[] input)
         {
             ComplexRecipe.RecipeElement[] output =
             {
@@ -108,6 +134,7 @@ namespace ProtectiveWear
                 nameDisplay = ComplexRecipe.RecipeNameDisplay.Result,
                 fabricators = new List<Tag> { (Tag)STATION },
                 sortOrder = 6,
+                requiredTech = tech,
             };
         }
     }

@@ -31,7 +31,7 @@ namespace SnazzySwimwear
                 "Boots");
             Add(SnazzyShoesConfig.ID, "Shoes",
                 "Sharp black-and-gold dress shoes. Pure flourish -- all decor, no protection.",
-                "Spin reed fiber into sharp black-and-gold dress shoes at the Textile Loom, purely to lift the room's mood.",
+                "Spin fiber into sharp black-and-gold dress shoes at the Textile Loom, purely to lift the room's mood.",
                 "Shoes");
         }
 
@@ -56,7 +56,6 @@ namespace SnazzySwimwear
     public static class Refashionator_Recipes
     {
         private const string STATION = "ClothingAlterationStation";
-        private const string FIBER = "BasicFabric"; // Reed Fiber
 
         public static void Postfix()
         {
@@ -69,7 +68,7 @@ namespace SnazzySwimwear
             ComplexRecipe.RecipeElement[] input =
             {
                 new ComplexRecipe.RecipeElement(baseId.ToTag(), 1f),
-                new ComplexRecipe.RecipeElement(FIBER.ToTag(), fiber),
+                new ComplexRecipe.RecipeElement(ProtectiveWear.Fibers.Options(), fiber),
             };
             ComplexRecipe.RecipeElement[] output =
             {
@@ -85,6 +84,7 @@ namespace SnazzySwimwear
                 nameDisplay = ComplexRecipe.RecipeNameDisplay.Result,
                 fabricators = new List<Tag> { (Tag)STATION },
                 sortOrder = 5,
+                requiredTech = ProtectiveWear.Refashionator_Recipes.TECH_TEXTILES,
             };
         }
     }
@@ -95,13 +95,12 @@ namespace SnazzySwimwear
     public static class TextileLoom_Recipes
     {
         private const string LOOM = "ClothingFabricator"; // Textile Loom
-        private const string FIBER = "BasicFabric";        // Reed Fiber
 
         public static void Postfix()
         {
             ComplexRecipe.RecipeElement[] input =
             {
-                new ComplexRecipe.RecipeElement(FIBER.ToTag(), 8f),
+                new ComplexRecipe.RecipeElement(ProtectiveWear.Fibers.Options(), 8f),
             };
             ComplexRecipe.RecipeElement[] output =
             {
@@ -117,6 +116,7 @@ namespace SnazzySwimwear
                 nameDisplay = ComplexRecipe.RecipeNameDisplay.Result,
                 fabricators = new List<Tag> { (Tag)LOOM },
                 sortOrder = 6,
+                requiredTech = ProtectiveWear.Refashionator_Recipes.TECH_TEXTILES,
             };
         }
     }

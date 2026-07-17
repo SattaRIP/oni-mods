@@ -276,17 +276,18 @@ namespace ProtectiveWear
         }
     }
 
-    // Research: same Artistry node as the Item Pedestal.
+    // Research: Textile Production ("Clothing"), alongside the Refashionator
+    // and the rest of the mod's clothing recipes.
     [HarmonyPatch(typeof(Db), "Initialize")]
     public static class Mannequin_Tech
     {
         public static void Postfix()
         {
-            Tech tech = Db.Get().Techs.TryGet("Artistry");
+            Tech tech = Db.Get().Techs.TryGet("Clothing");
             if (tech != null)
                 tech.unlockedItemIDs.Add(MannequinConfig.ID);
             else
-                Debug.LogWarning("[ProtectiveWear] Artistry tech not found; Mannequin stays unlocked from the start");
+                Debug.LogWarning("[ProtectiveWear] Clothing tech not found; Mannequin stays unlocked from the start");
         }
     }
 }
