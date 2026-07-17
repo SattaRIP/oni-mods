@@ -91,7 +91,10 @@ namespace ProtectiveWear
             { new Tag(UpgradedWarmCoatConfig.ID), 10f },
         };
 
-        private static readonly HashedString TorsoSymbol = (HashedString)"torso";
+        // Dupe rig body parts the dummy shows; must match PARTS in
+        // tools/gen_mannequin_kanim.py. Each is overridden with the displayed
+        // garment's worn art when the garment covers that part.
+        private static readonly string[] BodySymbols = { "torso", "pelvis" };
 
         private SingleEntityReceptacle receptacle;
         private Klei.AI.AttributeModifier decorMod;
@@ -172,20 +175,32 @@ namespace ProtectiveWear
 
             SymbolOverrideController soc = GetComponent<SymbolOverrideController>();
             if (soc != null)
-                soc.RemoveSymbolOverride(TorsoSymbol, 0);
+                foreach (string part in BodySymbols)
+                    soc.RemoveSymbolOverride((HashedString)part, 0);
 
-            if (occupant == null) return;
+            if (occupant == null || soc == null) return;
             Equippable eq = occupant.GetComponent<Equippable>();
             KAnimFile worn = (eq != null && eq.def != null) ? eq.def.BuildOverride : null;
             KAnimFileData data = worn != null ? worn.GetData() : null;
-            KAnim.Build.Symbol torso = (data != null && data.build != null)
-                ? data.build.GetSymbol((KAnimHashedString)"torso") : null;
-            Debug.Log("[ProtectiveWear] Mannequin dressing: occupant=" + occupant.name
-                + " soc=" + (soc != null) + " wornAnim=" + (worn != null)
-                + " torsoSymbol=" + (torso != null));
-            if (soc == null || torso == null) return;
+            if (data == null || data.build == null)
+            {
+                Debug.Log("[ProtectiveWear] Mannequin dressing: occupant="
+                    + occupant.name + " has no worn build; showing item icon");
+                return;
+            }
 
-            soc.AddSymbolOverride(TorsoSymbol, torso, 0);
+            int dressed = 0;
+            foreach (string part in BodySymbols)
+            {
+                KAnim.Build.Symbol s = data.build.GetSymbol((KAnimHashedString)part);
+                if (s == null) continue;
+                soc.AddSymbolOverride((HashedString)part, s, 0);
+                dressed++;
+            }
+            Debug.Log("[ProtectiveWear] Mannequin dressing: occupant=" + occupant.name
+                + " overrode " + dressed + "/" + BodySymbols.Length + " body symbols");
+            if (dressed == 0) return;
+
             KBatchedAnimController icon = occupant.GetComponent<KBatchedAnimController>();
             if (icon != null)
             {
