@@ -91,10 +91,15 @@ namespace ProtectiveWear
             { new Tag(UpgradedWarmCoatConfig.ID), 10f },
         };
 
-        // Dupe rig body parts the dummy shows; must match PARTS in
-        // tools/gen_mannequin_kanim.py. Each is overridden with the displayed
-        // garment's worn art when the garment covers that part.
-        private static readonly string[] BodySymbols = { "torso", "pelvis" };
+        // Dupe rig body parts the dummy shows (subset of PARTS in
+        // tools/gen_mannequin_kanim.py that garments can cover). Each is
+        // overridden with the displayed garment's worn art when present;
+        // uncovered parts keep their linen placeholder, like skin on a dupe.
+        private static readonly string[] BodySymbols =
+        {
+            "torso", "pelvis", "belt", "neck", "arm_sleeve",
+            "arm_lower_sleeve", "cuff", "hand_paint", "leg", "foot",
+        };
 
         private SingleEntityReceptacle receptacle;
         private Klei.AI.AttributeModifier decorMod;
@@ -180,7 +185,11 @@ namespace ProtectiveWear
 
             if (occupant == null || soc == null) return;
             Equippable eq = occupant.GetComponent<Equippable>();
-            KAnimFile worn = (eq != null && eq.def != null) ? eq.def.BuildOverride : null;
+            // GetBuildOverride resolves facade skins (vanilla outfit items like
+            // CustomClothing carry their worn art there, not on the def).
+            KAnimFile worn = eq != null ? eq.GetBuildOverride() : null;
+            if (worn == null && eq != null && eq.def != null)
+                worn = eq.def.BuildOverride;
             KAnimFileData data = worn != null ? worn.GetData() : null;
             if (data == null || data.build == null)
             {

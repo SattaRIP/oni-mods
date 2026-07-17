@@ -43,13 +43,17 @@ NEW = "mannequin"
 BODY = "body_comp_default"
 IDLE = "anim_idles_default"
 
-# dupe rig body parts shown on the dummy (and overridable by worn builds),
-# in idle_default draw order (torso in front of pelvis)
-PARTS = ["torso", "pelvis"]
+# dupe rig body parts shown on the dummy: every art element of the idle
+# pose except head/face gear and snap-on attachment points -- a full
+# faceless dupe statue. Draw order comes from the idle frame itself.
+PARTS = {"torso", "pelvis", "belt", "skirt", "neck", "arm_sleeve",
+         "arm_upper", "arm_lower_sleeve", "arm_lower", "cuff", "hand_paint",
+         "leg", "leg_skin", "foot"}
 
-# Shift applied to the copied idle-pose transforms: lifts the trunk onto the
-# stand and centers it on the footprint (dupe-space origin is at its feet).
-DELTA = (-3.6, -70.0)
+# Shift applied to the copied idle-pose transforms: centers the dupe on the
+# footprint and puts its feet on the base disc (dupe feet bottom out at
+# about y=-17 in dupe space; base top is ~+3).
+DELTA = (-3.6, 20.0)
 
 # stand palette
 WOOD = (99, 66, 42)
@@ -62,10 +66,10 @@ GHOST_WHITE = (235, 235, 235, 255)
 BOX_C = (-6.5, -199.3)
 BOX_W, BOX_H = 288.0, 480.0
 
-# stand geometry in world units (y-down): base disc on the floor, pole up
-# to the trunk (pelvis bottom sits around y=-105 after DELTA)
+# stand geometry in world units (y-down): a base disc on the floor with a
+# short pole stub rising between the statue's feet
 BASE_CY, BASE_RX, BASE_RY = 18.0, 82.0, 15.0
-POLE_TOP, POLE_HW = -125.0, 7.0
+POLE_TOP, POLE_HW = -55.0, 6.0
 
 
 def sdbm(s):
@@ -209,28 +213,33 @@ def generate():
     idle_table = dict(idle['hashes'])
     body_table = dict(body['hashes'])
     bank = next(a for a in idle['anims'] if a['name'] == 'idle_default')
-    idle_els = {}
-    for e in bank['frames'][0]['elements']:
-        nm = idle_table.get(e['symbolHash'])
-        if nm in PARTS and nm not in idle_els:
-            idle_els[nm] = e
+    # every idle-pose element whose symbol is a body part, in draw order
+    idle_elements = [e for e in bank['frames'][0]['elements']
+                     if idle_table.get(e['symbolHash']) in PARTS]
 
     BW, BH = body_img.size
-    pieces = []
-    for part in PARTS:
-        el = idle_els[part]
-        sym = next(s for s in body['symbols'] if body_table.get(s['hash']) == part)
-        fr = next(f for f in sym['frames']
-                  if f[0] <= el['frameNum'] < f[0] + f[1])
-        x, y, w, h, u0, v0, u1, v1 = fr[3:]
-        crop = body_img.crop((int(u0 * BW), int(v0 * BH),
-                              int(u1 * BW), int(v1 * BH)))
-        pieces.append(Piece(part, linenize(crop), (x, y, w, h), el))
-        print(f"{part}: idle f={el['frameNum']} pivot=({x:.1f},{y:.1f},{w:.0f},{h:.0f}) "
-              f"px={crop.size}")
+    body_sym = {body_table.get(s['hash']): s for s in body['symbols']}
 
-    # --- atlas layout (512x256, top-down UVs like the donor)
-    W, H = 512, 256
+    # unique (part, build frame) placeholder art + one Piece per element
+    from collections import OrderedDict
+    art = OrderedDict()  # (part, sourceFrameNum) -> (build frame, linen crop)
+    pieces = []
+    for e in idle_elements:
+        part = idle_table[e['symbolHash']]
+        sym = body_sym[part]
+        fr = next(f for f in sym['frames']
+                  if f[0] <= e['frameNum'] < f[0] + f[1])
+        key = (part, fr[0])
+        if key not in art:
+            u0, v0, u1, v1 = fr[7:]
+            crop = body_img.crop((int(u0 * BW), int(v0 * BH),
+                                  int(u1 * BW), int(v1 * BH)))
+            art[key] = (fr, linenize(crop))
+        pieces.append(Piece(part, art[key][1], tuple(fr[3:7]), e))
+    print(f"{len(idle_elements)} pose elements, {len(art)} unique part frames")
+
+    # --- atlas layout (512x512, top-down UVs like the donor)
+    W, H = 512, 512
     atlas = Image.new("RGBA", (W, H), (0, 0, 0, 0))
 
     def uv(x0, y0, x1, y1):
@@ -282,24 +291,32 @@ def generate():
     atlas.paste(icon, (288, 0), icon)
     ui_s["frames"][0][7:] = uv(288, 0, 396, 148)
 
-    # torso/pelvis placeholder symbols: the linen art at native dupe pivots
-    px_cursor = 396
-    for piece in pieces:
-        el = idle_els[piece.name]
-        pw, ph = piece.art.size
-        atlas.paste(piece.art, (px_cursor, 0), piece.art)
+    # body-part placeholder symbols: the linen art at native dupe pivots and
+    # the REAL rig symbol hashes (copied from the body build), so worn-build
+    # overrides match. Packed into the atlas region below the donor boxes.
+    cx_px, cy_px, row_h = 0, 260, 0
+    frames_by_part = OrderedDict()
+    for (part, sfn), (fr, crop) in art.items():
+        pw, ph = crop.size
+        if cx_px + pw > W:
+            cx_px, cy_px, row_h = 0, cy_px + row_h + 4, 0
+        assert cy_px + ph <= H, "atlas overflow"
+        atlas.paste(crop, (cx_px, cy_px), crop)
+        frames_by_part.setdefault(part, []).append(
+            [fr[0], fr[1], 0] + list(fr[3:7])
+            + uv(cx_px, cy_px, cx_px + pw, cy_px + ph))
+        cx_px += pw + 4
+        row_h = max(row_h, ph)
+    for part, frames in frames_by_part.items():
+        rig_hash = body_sym[part]["hash"]
         build["symbols"].append({
-            "hash": sdbm(piece.name), "path": item_s["path"],
+            "hash": rig_hash, "path": item_s["path"],
             "color": item_s["color"], "flags": item_s["flags"],
-            "numFrames": 1,
-            "frames": [[el['frameNum'], 1, 0] + list(piece.pivot)
-                       + uv(px_cursor, 0, px_cursor + pw, ph)],
+            "numFrames": len(frames), "frames": frames,
         })
         build["numSymbols"] += 1
-        build["numFrames"] += 1
-        build["hashes"].append((sdbm(piece.name), piece.name))
-        px_cursor += pw + 4
-    assert px_cursor <= W, f"atlas overflow: {px_cursor}"
+        build["numFrames"] += len(frames)
+        build["hashes"].append((rig_hash, part))
 
     build["name"] = NEW
     out = ANIM / f"{NEW}_anims" / NEW
@@ -322,12 +339,12 @@ def generate():
         base = next(e for e in fr["elements"] if e["symbolHash"] == item_hash)
         base["tx"], base["ty"] = pel["tx"], pel["ty"]
         new_els = []
-        for piece in pieces:  # PARTS order = front to back
-            src = idle_els[piece.name]
+        for src in idle_elements:  # idle draw order preserved
+            part = idle_table[src["symbolHash"]]
             e = dict(base)
-            e["symbolHash"] = sdbm(piece.name)
+            e["symbolHash"] = body_sym[part]["hash"]
             if e["folderHash"] == item_hash:
-                e["folderHash"] = sdbm(piece.name)
+                e["folderHash"] = body_sym[part]["hash"]
             e["frameNum"] = src["frameNum"]
             for k in ("ma", "mb", "mc", "md"):
                 e[k] = src[k]
@@ -337,9 +354,10 @@ def generate():
             added += 1
         fr["elements"] = new_els + fr["elements"]
     anim["h_elements"] += added
-    anim["maxVisSymbolFrames"] = max(anim["maxVisSymbolFrames"], len(PARTS) + 1)
-    for part in PARTS:
-        anim["hashes"].append((sdbm(part), part))
+    anim["maxVisSymbolFrames"] = max(anim["maxVisSymbolFrames"],
+                                     len(idle_elements) + 1)
+    for part in frames_by_part:
+        anim["hashes"].append((body_sym[part]["hash"], part))
 
     (out / f"{NEW}_build.bytes").write_bytes(write_build(build))
     (out / f"{NEW}_anim.bytes").write_bytes(write_anim(anim))
