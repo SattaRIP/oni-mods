@@ -119,6 +119,11 @@ namespace ProtectiveWear
         private void OnOccupantChanged(object data)
         {
             Refresh();
+            // SingleEntityReceptacle can fire this before its Occupant
+            // property is assigned; refresh again next frame so a deposit is
+            // never missed.
+            GameScheduler.Instance.ScheduleNextFrame("MannequinDecor.Refresh",
+                _ => { if (this != null) Refresh(); });
         }
 
         private void Refresh()
@@ -166,17 +171,19 @@ namespace ProtectiveWear
             ShowHiddenOccupant();
 
             SymbolOverrideController soc = GetComponent<SymbolOverrideController>();
-            if (soc == null) return;
-            soc.RemoveSymbolOverride(TorsoSymbol, 0);
+            if (soc != null)
+                soc.RemoveSymbolOverride(TorsoSymbol, 0);
 
             if (occupant == null) return;
             Equippable eq = occupant.GetComponent<Equippable>();
             KAnimFile worn = (eq != null && eq.def != null) ? eq.def.BuildOverride : null;
-            if (worn == null) return;
-            KAnimFileData data = worn.GetData();
+            KAnimFileData data = worn != null ? worn.GetData() : null;
             KAnim.Build.Symbol torso = (data != null && data.build != null)
                 ? data.build.GetSymbol((KAnimHashedString)"torso") : null;
-            if (torso == null) return;
+            Debug.Log("[ProtectiveWear] Mannequin dressing: occupant=" + occupant.name
+                + " soc=" + (soc != null) + " wornAnim=" + (worn != null)
+                + " torsoSymbol=" + (torso != null));
+            if (soc == null || torso == null) return;
 
             soc.AddSymbolOverride(TorsoSymbol, torso, 0);
             KBatchedAnimController icon = occupant.GetComponent<KBatchedAnimController>();

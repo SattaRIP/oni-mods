@@ -17,9 +17,10 @@ Key geometry facts (dumped from the donor):
     donor boxes as-is makes the BUILT mannequin a tile shorter than its
     blueprint, so the built frame instead copies `place`'s pivot geometry
     (and its anim element transform) and gets a full-size 144x240 region.
-  * Vanilla blueprints are white because the white silhouette is baked into
-    the `place` art (donor place art is ~(224,224,224) + gray outline), so
-    the mannequin's `place` is drawn as a white-silhouette dressform.
+  * Vanilla blueprints are white because the ghost look is baked into the
+    `place` art -- and it's white LINE ART with a transparent interior (the
+    donor's is a hand-drawn white outline of the pedestal), so the
+    mannequin's `place` is drawn as hollow white line-art.
   * A `torso` symbol (Klei SDBM hash of "torso", same symbol name the dupe
     rig uses) is added: a transparent placeholder that MannequinDecor
     overrides at runtime with the displayed garment's worn `torso` art via
@@ -60,19 +61,15 @@ TORSO_SRC_PIVOT = (0.46, -55.24)
 TORSO_TX = TORSO_CENTER[0] - TORSO_SCALE * TORSO_SRC_PIVOT[0]
 TORSO_TY = TORSO_CENTER[1] - TORSO_SCALE * TORSO_SRC_PIVOT[1]
 
-# palettes
+# palette
 SOLID = {
     'LINEN': (208, 181, 150), 'LINEN_DARK': (172, 143, 112),
     'WOOD': (99, 66, 42), 'WOOD_DARK': (66, 43, 27),
     'OUTLINE': (38, 28, 22),
 }
-# Blueprint/under-construction silhouette, matching the donor's baked-in
-# white place art: near-white fills, mid-gray outline.
-GHOST = {
-    'LINEN': (230, 230, 230), 'LINEN_DARK': (204, 204, 204),
-    'WOOD': (214, 214, 214), 'WOOD_DARK': (192, 192, 192),
-    'OUTLINE': (104, 104, 104),
-}
+# Blueprint line colour. Vanilla place art (checked on the donor) is white
+# LINE ART with a hollow/transparent interior, not a filled silhouette.
+GHOST_WHITE = (235, 235, 235, 255)
 
 
 def extract():
@@ -120,6 +117,59 @@ def torso_half_width(t):
     return keys[-1][1]
 
 
+# proportions (fractions of box height), shared by solid + ghost renders
+KNOB_TOP, NECK_TOP = 0.02, 0.055
+TORSO_TOP, TORSO_BOT = 0.115, 0.66
+BASE_CY, BASE_RY = 0.945, 0.038
+
+
+def torso_outline_points(W, H, cx):
+    """Left and right torso edge polylines at supersampled resolution."""
+    steps = 48
+    left, right = [], []
+    for i in range(steps + 1):
+        t = i / steps
+        y = (TORSO_TOP + (TORSO_BOT - TORSO_TOP) * t) * H
+        hw = torso_half_width(t) * W
+        left.append((cx - hw, y))
+        right.append((cx + hw, y))
+    return left, right
+
+
+def draw_dressform_ghost(w, h):
+    """White line-art dressform (hollow interior), like vanilla place art."""
+    from PIL import Image, ImageDraw
+    S = 4
+    W, H = w * S, h * S
+    img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    cx = W / 2
+    lw = int(1.6 * S)
+
+    left, right = torso_outline_points(W, H, cx)
+    d.line(left, fill=GHOST_WHITE, width=lw, joint="curve")
+    d.line(right, fill=GHOST_WHITE, width=lw, joint="curve")
+    d.line([left[0], right[0]], fill=GHOST_WHITE, width=lw)      # shoulders
+    d.line([left[-1], right[-1]], fill=GHOST_WHITE, width=lw)    # hem
+    d.line([cx, TORSO_TOP * H + 2 * S, cx, TORSO_BOT * H - 2 * S],
+           fill=GHOST_WHITE, width=max(S, lw // 2))              # seam
+
+    # pole
+    d.rectangle([cx - 0.022 * W, TORSO_BOT * H, cx + 0.022 * W, BASE_CY * H],
+                outline=GHOST_WHITE, width=lw)
+    # base disc
+    d.ellipse([cx - 0.30 * W, (BASE_CY - BASE_RY) * H,
+               cx + 0.30 * W, (BASE_CY + BASE_RY) * H],
+              outline=GHOST_WHITE, width=lw)
+    # neck + cap knob
+    d.rectangle([cx - 0.05 * W, NECK_TOP * H, cx + 0.05 * W, (TORSO_TOP + 0.02) * H],
+                outline=GHOST_WHITE, width=lw)
+    d.ellipse([cx - 0.045 * W, KNOB_TOP * H, cx + 0.045 * W, (KNOB_TOP + 0.045) * H],
+              outline=GHOST_WHITE, width=lw)
+
+    return img.resize((w, h), Image.LANCZOS)
+
+
 def draw_dressform(w, h, pal):
     """Return an RGBA image (w x h) of the dressform, drawn 4x supersampled."""
     from PIL import Image, ImageDraw, ImageFilter
@@ -132,9 +182,9 @@ def draw_dressform(w, h, pal):
     cx = W / 2
 
     # proportions (fractions of box height)
-    knob_top, neck_top = 0.02, 0.055
-    torso_top, torso_bot = 0.115, 0.66
-    base_cy, base_ry = 0.945, 0.038
+    knob_top, neck_top = KNOB_TOP, NECK_TOP
+    torso_top, torso_bot = TORSO_TOP, TORSO_BOT
+    base_cy, base_ry = BASE_CY, BASE_RY
 
     # pole
     d.rectangle([cx - 0.022 * W, torso_bot * H, cx + 0.022 * W, base_cy * H], fill=WOOD)
@@ -210,8 +260,8 @@ def generate():
     def put(img, x0, y0):
         atlas.paste(img, (x0, y0), img)
 
-    # place: white silhouette (blueprint + under-construction look)
-    put(draw_dressform(144, 240, GHOST), 0, 0)
+    # place: white line-art ghost (blueprint + under-construction look)
+    put(draw_dressform_ghost(144, 240), 0, 0)
     place_s["frames"][0][7:] = uv(0, 0, 144, 240)
 
     # pedestal_item (built state): full-colour dressform, and the WORLD
