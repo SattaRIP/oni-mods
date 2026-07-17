@@ -37,7 +37,7 @@ namespace ProtectiveWear
 
             Add(EVASuitConfig.ID, "Soft Suit",
                 "A lightweight sealed suit. No checkpoint required. Protection from cold, heat, radiation and airborne germs; keeps its wearer dry (no Sopping Wet or Soggy Feet) and shrugs off eye irritation; a large breath reserve and fewer bathroom breaks -- but no air tank, so it only delays suffocation. Covers head to toe: the suit's own boots fill the shoes slot while it's worn.",
-                "Combine a Warm Sweater, Swimwear, Rubber Boots and reed fiber into a checkpoint-free Soft Suit: cold/heat/radiation/germ shielding, immunity to wet and eye-irritation effects, a big breath reserve, slower bladder fill, and built-in boots.",
+                "Combine a Warm Sweater, Swimwear, Rubber Boots, an Oxygen Mask and reed fiber into a checkpoint-free Soft Suit: cold/heat/radiation/germ shielding, immunity to wet and eye-irritation effects, a big breath reserve, slower bladder fill, and built-in boots.",
                 "Suit");
 
             Add(EVASuitBootsConfig.ID, "Soft Suit Boots",
@@ -59,8 +59,8 @@ namespace ProtectiveWear
     }
 
     // Register the upgrade recipes at the Clothing Refashionator:
-    //   Warm Sweater                            + 5 kg Reed Fiber  -> Upgraded Warm Coat
-    //   Warm Sweater + Swimwear + Rubber Boots  + 10 kg Reed Fiber -> EVA Suit
+    //   Warm Sweater                                          + 5 kg Reed Fiber  -> Upgraded Warm Coat
+    //   Warm Sweater + Swimwear + Rubber Boots + Oxygen Mask  + 10 kg Reed Fiber -> EVA Suit
     // The material that made the base garments carries over for free, since the
     // base garments are themselves ingredients. The boots justify the suit's
     // built-in footwear (it fills the shoes slot while worn).
@@ -72,6 +72,7 @@ namespace ProtectiveWear
         private const string WARM_SWEATER = "Warm_Vest";
         private const string SWIMWEAR = "DrySuit";
         private const string BOOTS = "RubberBoots";
+        private const string MASK = "Oxygen_Mask";
 
         public static void Postfix()
         {
@@ -86,6 +87,7 @@ namespace ProtectiveWear
                 new ComplexRecipe.RecipeElement(WARM_SWEATER.ToTag(), 1f),
                 new ComplexRecipe.RecipeElement(SWIMWEAR.ToTag(), 1f),
                 new ComplexRecipe.RecipeElement(BOOTS.ToTag(), 1f),
+                new ComplexRecipe.RecipeElement(MASK.ToTag(), 1f),
                 new ComplexRecipe.RecipeElement(FIBER.ToTag(), 10f),
             });
         }
