@@ -44,11 +44,20 @@ BODY = "body_comp_default"
 IDLE = "anim_idles_default"
 
 # dupe rig body parts shown on the dummy: every art element of the idle
-# pose except head/face gear and snap-on attachment points -- a full
-# faceless dupe statue. Draw order comes from the idle frame itself.
+# pose except face gear -- a full faceless dupe statue. Draw order comes
+# from the idle frame itself. Two special members:
+#   snapto_headshape -- its placeholder art is replaced with a code-drawn
+#     linen head (custom pivot below) so the statue has a head;
+#   snapto_hat -- kept as the rig's invisible hat anchor; MannequinDecor
+#     overrides it with a hat accessory symbol when the player picks one.
 PARTS = {"torso", "pelvis", "belt", "skirt", "neck", "arm_sleeve",
          "arm_upper", "arm_lower_sleeve", "arm_lower", "cuff", "hand_paint",
-         "leg", "leg_skin", "foot"}
+         "leg", "leg_skin", "foot", "snapto_headshape", "snapto_hat"}
+
+# linen head geometry: pivot (x, y, w, h) in dupe-art units relative to the
+# snapto_headshape bone (neck top, idle t=(+14.4,-165.4)); spans up to the
+# hat bone (~-286) so picked hats sit on the crown.
+HEAD_PIVOT = (8.0, -60.0, 100.0, 120.0)
 
 # Shift applied to the copied idle-pose transforms: centers the dupe on the
 # footprint and puts its feet on the base disc (dupe feet bottom out at
@@ -109,6 +118,35 @@ def extract():
     missing = (wanted | set(tex)) - set(found)
     if missing:
         sys.exit(f"MISSING from game assets: {sorted(missing)}")
+
+
+def draw_head(w=100, h=120):
+    """Linen dupe-shaped head: a big smooth egg with the statue's shading."""
+    from PIL import Image, ImageDraw, ImageFilter
+    S = 4
+    W, H = w * S, h * S
+    fill = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    d = ImageDraw.Draw(fill)
+    # egg: wider at the top like dupe heads, chin tucked in
+    d.ellipse([0.06 * W, 0.02 * H, 0.94 * W, 0.86 * H], fill=LINEN)
+    d.ellipse([0.22 * W, 0.55 * H, 0.78 * W, 0.98 * H], fill=LINEN)
+    # right-side shade + centre seam, matching the body's linen look
+    px = fill.load()
+    lr, lg, lb = LINEN
+    for yy in range(H):
+        for xx in range(int(W * 0.62), W):
+            r, g, b, a = px[xx, yy]
+            if a == 0:
+                continue
+            k = 1.0 - 0.22 * (xx / W - 0.62) / 0.38
+            px[xx, yy] = (int(r * k), int(g * k), int(b * k), a)
+    d.line([W * 0.5, H * 0.06, W * 0.5, H * 0.92], fill=(172, 143, 112, 255), width=S)
+    mask = fill.getchannel("A")
+    fat = mask.filter(ImageFilter.MaxFilter(2 * S + 1))
+    out = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    out.paste(Image.new("RGBA", (W, H), OUTLINE + (255,)), (0, 0), fat)
+    out.paste(fill, (0, 0), mask)
+    return out.resize((w, h), Image.LANCZOS)
 
 
 def linenize(img):
@@ -231,11 +269,21 @@ def generate():
                   if f[0] <= e['frameNum'] < f[0] + f[1])
         key = (part, fr[0])
         if key not in art:
-            u0, v0, u1, v1 = fr[7:]
-            crop = body_img.crop((int(u0 * BW), int(v0 * BH),
-                                  int(u1 * BW), int(v1 * BH)))
-            art[key] = (fr, linenize(crop))
-        pieces.append(Piece(part, art[key][1], tuple(fr[3:7]), e))
+            if part == "snapto_headshape":
+                # replace the anchor's blank art with the linen head and a
+                # pivot that gives it real size above the neck
+                fr = fr[:3] + list(HEAD_PIVOT) + fr[7:]
+                art[key] = (fr, draw_head(int(HEAD_PIVOT[2]), int(HEAD_PIVOT[3])))
+            elif part == "snapto_hat":
+                # invisible anchor: hats come from runtime symbol overrides
+                from PIL import Image as _I
+                art[key] = (fr, _I.new("RGBA", (16, 16), (0, 0, 0, 0)))
+            else:
+                u0, v0, u1, v1 = fr[7:]
+                crop = body_img.crop((int(u0 * BW), int(v0 * BH),
+                                      int(u1 * BW), int(v1 * BH)))
+                art[key] = (fr, linenize(crop))
+        pieces.append(Piece(part, art[key][1], tuple(art[key][0][3:7]), e))
     print(f"{len(idle_elements)} pose elements, {len(art)} unique part frames")
 
     # --- atlas layout (512x512, top-down UVs like the donor)

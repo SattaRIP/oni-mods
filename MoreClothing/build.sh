@@ -24,6 +24,7 @@ mcs \
   -r:"$ONI_MANAGED/Assembly-CSharp-firstpass.dll" \
   -r:"$ONI_MANAGED/UnityEngine.CoreModule.dll" \
   -r:"$ONI_MANAGED/UnityEngine.dll" \
+  -r:"$ONI_MANAGED/UnityEngine.UI.dll" \
   -r:"$ONI_MANAGED/0Harmony.dll" \
   -r:"$ONI_MANAGED/netstandard.dll" \
   "$SCRIPT_DIR/src/"*.cs

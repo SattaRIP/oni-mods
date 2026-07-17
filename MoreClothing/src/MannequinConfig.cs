@@ -70,9 +70,12 @@ namespace ProtectiveWear
     // Grants the building decor while a garment is displayed, and dresses the
     // mannequin in it: if the garment has worn torso art (the same art a dupe
     // shows when wearing it), that art is drawn on the dressform through a
-    // SymbolOverrideController and the floating item icon is hidden. Decor
-    // mirrors ItemPedestal's plumbing (attribute modifiers on the building,
-    // which DecorProvider picks up) with our own per-garment values.
+    // SymbolOverrideController and the floating item icon is hidden. A hat
+    // can be picked from the building's right-click menu (rendered through
+    // the same accessory machinery that hats dupes). Decor mirrors
+    // ItemPedestal's plumbing (attribute modifiers on the building, which
+    // DecorProvider picks up) with our own per-garment values.
+    [KSerialization.SerializationConfig(KSerialization.MemberSerialization.OptIn)]
     public class MannequinDecor : KMonoBehaviour
     {
         private const float DEFAULT_DECOR = 10f;
@@ -105,12 +108,18 @@ namespace ProtectiveWear
         private Klei.AI.AttributeModifier decorMod;
         private Klei.AI.AttributeModifier radiusMod;
         private GameObject hiddenOccupant;
+        private KBatchedAnimController hiddenIcon;
+
+        // Selected hat accessory id (empty = bare head); survives save/load.
+        [KSerialization.Serialize]
+        private string hatId;
 
         protected override void OnSpawn()
         {
             base.OnSpawn();
             receptacle = GetComponent<SingleEntityReceptacle>();
             Subscribe((int)GameHashes.OccupantChanged, OnOccupantChanged);
+            Subscribe((int)GameHashes.RefreshUserMenu, OnRefreshUserMenu);
             Refresh();
             // On load the receptacle may restore its occupant after us.
             GameScheduler.Instance.ScheduleNextFrame("MannequinDecor.Refresh",
@@ -121,7 +130,18 @@ namespace ProtectiveWear
         {
             ShowHiddenOccupant();
             Unsubscribe((int)GameHashes.OccupantChanged, OnOccupantChanged);
+            Unsubscribe((int)GameHashes.RefreshUserMenu, OnRefreshUserMenu);
             base.OnCleanUp();
+        }
+
+        // Last-resort enforcement for the hidden item icon: several game
+        // systems (receptacle repositioning, batching, culling) re-enable the
+        // occupant's renderer at unpredictable times, so any one-shot hide can
+        // be resurrected. Re-assert it whenever it comes back.
+        private void Update()
+        {
+            if (hiddenOccupant != null && hiddenIcon != null && hiddenIcon.enabled)
+                Storage.MakeItemInvisible(hiddenOccupant, true, false);
         }
 
         private void OnOccupantChanged(object data)
@@ -139,6 +159,63 @@ namespace ProtectiveWear
             GameObject occupant = receptacle != null ? receptacle.Occupant : null;
             RefreshDecor(occupant);
             RefreshDressing(occupant);
+            RefreshHat();
+        }
+
+        // --- hat picker -----------------------------------------------------
+
+        private void OnRefreshUserMenu(object data)
+        {
+            Game.Instance.userMenu.AddButton(gameObject, new KIconButtonMenu.ButtonInfo(
+                "action_switch_toggle",
+                string.IsNullOrEmpty(hatId) ? "Add Hat" : "Next Hat",
+                NextHat, Action.NumActions, null, null, null,
+                "Cycle through the hats the Mannequin can wear"));
+            if (!string.IsNullOrEmpty(hatId))
+                Game.Instance.userMenu.AddButton(gameObject, new KIconButtonMenu.ButtonInfo(
+                    "action_empty_contents", "Remove Hat",
+                    ClearHat, Action.NumActions, null, null, null,
+                    "Bare the Mannequin's head"));
+        }
+
+        private void NextHat()
+        {
+            List<Accessory> hats = Db.Get().AccessorySlots.Hat.accessories;
+            if (hats == null || hats.Count == 0) return;
+            int idx = -1;
+            for (int i = 0; i < hats.Count; i++)
+                if (hats[i].Id == hatId) { idx = i; break; }
+            idx++;
+            hatId = idx >= hats.Count ? null : hats[idx].Id;
+            RefreshHat();
+            Game.Instance.userMenu.Refresh(gameObject);
+        }
+
+        private void ClearHat()
+        {
+            hatId = null;
+            RefreshHat();
+            Game.Instance.userMenu.Refresh(gameObject);
+        }
+
+        // Renders the selected hat on the statue's head through the same
+        // accessory override dupes use (hat art replaces the rig's snapto_hat
+        // anchor, which the mannequin kanim includes).
+        private void RefreshHat()
+        {
+            SymbolOverrideController soc = GetComponent<SymbolOverrideController>();
+            if (soc == null) return;
+            AccessorySlot slot = Db.Get().AccessorySlots.Hat;
+            soc.RemoveSymbolOverride((HashedString)slot.targetSymbolId, 1);
+            if (string.IsNullOrEmpty(hatId)) return;
+            Accessory acc = slot.Lookup(hatId);
+            if (acc == null)
+            {
+                Debug.LogWarning("[ProtectiveWear] Mannequin hat not found: " + hatId);
+                hatId = null;
+                return;
+            }
+            soc.AddSymbolOverride((HashedString)slot.targetSymbolId, acc.symbol, 1);
         }
 
         private void RefreshDecor(GameObject occupant)
@@ -216,6 +293,7 @@ namespace ProtectiveWear
             // building scrolls into view).
             Storage.MakeItemInvisible(occupant, true, false);
             hiddenOccupant = occupant;
+            hiddenIcon = occupant.GetComponent<KBatchedAnimController>();
         }
 
         // The hidden item icon belongs to the stored garment itself, so it
@@ -226,6 +304,7 @@ namespace ProtectiveWear
             if (hiddenOccupant == null) return;
             Storage.MakeItemInvisible(hiddenOccupant, false, false);
             hiddenOccupant = null;
+            hiddenIcon = null;
         }
 
         // Re-hide after the receptacle's own occupant handling, which
