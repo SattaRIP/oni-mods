@@ -44,11 +44,18 @@ namespace ProtectiveWear
 
             SingleEntityReceptacle receptacle = go.AddOrGet<OrnamentReceptacle>();
             receptacle.AddDepositTag(GameTags.Clothes);
-            // Chest height on the dressform, so the garment reads as "worn".
-            receptacle.occupyingObjectRelativePosition = new Vector3(0f, 1.05f, -1f);
+            // Chest height on the dressform; only garments without worn torso
+            // art (boots, masks) actually show here -- the rest are drawn ON
+            // the dressform via the torso symbol override below.
+            receptacle.occupyingObjectRelativePosition = new Vector3(0f, 1.25f, -1f);
 
             go.AddOrGet<DecorProvider>();
             go.AddOrGet<MannequinDecor>();
+
+            // Lets MannequinDecor swap the kanim's placeholder "torso" symbol
+            // for the displayed garment's worn torso art (same machinery that
+            // dresses dupes). Must be added at prefab time.
+            SymbolOverrideControllerUtil.AddToPrefab(go);
 
             go.GetComponent<KPrefabID>().AddTag(GameTags.Decoration, false);
             go.GetComponent<KPrefabID>().AddTag(GameTags.OrnamentDisplayer, false);
@@ -59,9 +66,12 @@ namespace ProtectiveWear
         }
     }
 
-    // Grants the building decor while a garment is displayed. Mirrors
-    // ItemPedestal's plumbing (attribute modifiers on the building, which
-    // DecorProvider picks up) with our own per-garment values.
+    // Grants the building decor while a garment is displayed, and dresses the
+    // mannequin in it: if the garment has worn torso art (the same art a dupe
+    // shows when wearing it), that art is drawn on the dressform through a
+    // SymbolOverrideController and the floating item icon is hidden. Decor
+    // mirrors ItemPedestal's plumbing (attribute modifiers on the building,
+    // which DecorProvider picks up) with our own per-garment values.
     public class MannequinDecor : KMonoBehaviour
     {
         private const float DEFAULT_DECOR = 10f;
@@ -80,9 +90,12 @@ namespace ProtectiveWear
             { new Tag(UpgradedWarmCoatConfig.ID), 10f },
         };
 
+        private static readonly HashedString TorsoSymbol = (HashedString)"torso";
+
         private SingleEntityReceptacle receptacle;
         private Klei.AI.AttributeModifier decorMod;
         private Klei.AI.AttributeModifier radiusMod;
+        private GameObject hiddenOccupant;
 
         protected override void OnSpawn()
         {
@@ -90,10 +103,14 @@ namespace ProtectiveWear
             receptacle = GetComponent<SingleEntityReceptacle>();
             Subscribe((int)GameHashes.OccupantChanged, OnOccupantChanged);
             Refresh();
+            // On load the receptacle may restore its occupant after us.
+            GameScheduler.Instance.ScheduleNextFrame("MannequinDecor.Refresh",
+                _ => { if (this != null) Refresh(); });
         }
 
         protected override void OnCleanUp()
         {
+            ShowHiddenOccupant();
             Unsubscribe((int)GameHashes.OccupantChanged, OnOccupantChanged);
             base.OnCleanUp();
         }
@@ -105,6 +122,13 @@ namespace ProtectiveWear
 
         private void Refresh()
         {
+            GameObject occupant = receptacle != null ? receptacle.Occupant : null;
+            RefreshDecor(occupant);
+            RefreshDressing(occupant);
+        }
+
+        private void RefreshDecor(GameObject occupant)
+        {
             Klei.AI.Attributes attrs = Klei.AI.ModifiersExtensions.GetAttributes(this);
             if (attrs == null) return;
             if (decorMod != null)
@@ -115,7 +139,6 @@ namespace ProtectiveWear
                 radiusMod = null;
             }
 
-            GameObject occupant = receptacle != null ? receptacle.Occupant : null;
             if (occupant == null) return;
 
             KPrefabID kpid = occupant.GetComponent<KPrefabID>();
@@ -132,6 +155,46 @@ namespace ProtectiveWear
                 db.BuildingAttributes.DecorRadius.Id, RADIUS_BONUS, label, false, false, true);
             attrs.Add(decorMod);
             attrs.Add(radiusMod);
+        }
+
+        // Dress the mannequin: override the kanim's placeholder torso symbol
+        // with the garment's worn torso art and hide the floating item icon.
+        // Garments with no worn torso art (boots, shoes, masks) keep the icon.
+        private void RefreshDressing(GameObject occupant)
+        {
+            ShowHiddenOccupant();
+
+            SymbolOverrideController soc = GetComponent<SymbolOverrideController>();
+            if (soc == null) return;
+            soc.RemoveSymbolOverride(TorsoSymbol, 0);
+
+            if (occupant == null) return;
+            Equippable eq = occupant.GetComponent<Equippable>();
+            KAnimFile worn = (eq != null && eq.def != null) ? eq.def.BuildOverride : null;
+            if (worn == null) return;
+            KAnimFileData data = worn.GetData();
+            KAnim.Build.Symbol torso = (data != null && data.build != null)
+                ? data.build.GetSymbol((KAnimHashedString)"torso") : null;
+            if (torso == null) return;
+
+            soc.AddSymbolOverride(TorsoSymbol, torso, 0);
+            KBatchedAnimController icon = occupant.GetComponent<KBatchedAnimController>();
+            if (icon != null)
+            {
+                icon.SetVisiblity(false);
+                hiddenOccupant = occupant;
+            }
+        }
+
+        // The hidden item icon belongs to the stored garment itself, so it
+        // must be made visible again before the garment goes anywhere else
+        // (swapped out, dropped, mannequin deconstructed).
+        private void ShowHiddenOccupant()
+        {
+            if (hiddenOccupant == null) return;
+            KBatchedAnimController prev = hiddenOccupant.GetComponent<KBatchedAnimController>();
+            if (prev != null) prev.SetVisiblity(true);
+            hiddenOccupant = null;
         }
     }
 

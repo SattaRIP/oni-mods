@@ -6,14 +6,27 @@ Run with ~/.venvs/oni-kanim/bin/python (needs UnityPy + Pillow).
 The pedestal is the donor because the Mannequin IS a re-skinned pedestal
 (same 1x2 footprint, same receptacle machinery, same anim states -- the
 building def keeps DefaultAnimState "pedestal"). We parse its build, rename
-it to "mannequin", and repaint every symbol frame's atlas region with a
-tailor's dressform drawn here in code: linen torso on a dark wood pole and
-base, ONI-style dark outline, 4x supersampled for soft edges.
+it to "mannequin", and rebuild the atlas with a tailor's dressform drawn
+here in code: linen torso on a dark wood pole and base, ONI-style dark
+outline, 4x supersampled for soft edges.
 
-Klei build UVs may be measured from either the top or the bottom of the
-texture, so the orientation that actually contains the donor's opaque pixels
-is detected first (same trick as the rainbow recolour) and the dressform is
-drawn in that orientation.
+Key geometry facts (dumped from the donor):
+  * The donor's built-state symbol `pedestal_item` is only 288x276 anim
+    units (~1.4 tiles) -- the pedestal is a short stand -- while its `place`
+    symbol is 288x480 (~2.4 tiles, the full footprint). Drawing into the
+    donor boxes as-is makes the BUILT mannequin a tile shorter than its
+    blueprint, so the built frame instead copies `place`'s pivot geometry
+    (and its anim element transform) and gets a full-size 144x240 region.
+  * Vanilla blueprints are white because the white silhouette is baked into
+    the `place` art (donor place art is ~(224,224,224) + gray outline), so
+    the mannequin's `place` is drawn as a white-silhouette dressform.
+  * A `torso` symbol (Klei SDBM hash of "torso", same symbol name the dupe
+    rig uses) is added: a transparent placeholder that MannequinDecor
+    overrides at runtime with the displayed garment's worn `torso` art via
+    SymbolOverrideController -- the mannequin literally wears the clothes.
+    Its anim element uses frameNum 10 (the front-facing view on the dupe
+    rig; present in every worn build checked) and is calibrated below from
+    the worn-torso pivot so the garment lands on the dressform's torso.
 
 Output goes to anim/mannequin_anims/mannequin/, which build.sh copies into
 dist/. Re-run after game updates if Klei changes the pedestal art.
@@ -32,12 +45,34 @@ ANIM = REPO / "anim"
 SRC = "pedestal"
 NEW = "mannequin"
 
-# palette
-LINEN = (208, 181, 150)
-LINEN_DARK = (172, 143, 112)
-WOOD = (99, 66, 42)
-WOOD_DARK = (66, 43, 27)
-OUTLINE = (38, 28, 22)
+# Klei SDBM hash of "torso" (matches the dupe rig / worn clothing builds).
+TORSO_HASH = 740660083
+
+# Worn-garment torso element calibration, in anim units (200 units = 1 tile,
+# y-down). Target = the dressform torso's box inside the 288x480 place-sized
+# art (torso spans 0.115..0.66 of the box height; art center from the donor
+# place frame: element t + pivot = (-6.5, -199.3), so the art top edge is at
+# -439.3). Source = worn `torso` frame 10 pivot, x=0.46 y=-55.24 w=88 h=110
+# (identical across snazzy swimwear / winter coat / soft suit worn builds).
+TORSO_SCALE = 2.3
+TORSO_CENTER = (-6.5, -253.3)
+TORSO_SRC_PIVOT = (0.46, -55.24)
+TORSO_TX = TORSO_CENTER[0] - TORSO_SCALE * TORSO_SRC_PIVOT[0]
+TORSO_TY = TORSO_CENTER[1] - TORSO_SCALE * TORSO_SRC_PIVOT[1]
+
+# palettes
+SOLID = {
+    'LINEN': (208, 181, 150), 'LINEN_DARK': (172, 143, 112),
+    'WOOD': (99, 66, 42), 'WOOD_DARK': (66, 43, 27),
+    'OUTLINE': (38, 28, 22),
+}
+# Blueprint/under-construction silhouette, matching the donor's baked-in
+# white place art: near-white fills, mid-gray outline.
+GHOST = {
+    'LINEN': (230, 230, 230), 'LINEN_DARK': (204, 204, 204),
+    'WOOD': (214, 214, 214), 'WOOD_DARK': (192, 192, 192),
+    'OUTLINE': (104, 104, 104),
+}
 
 
 def extract():
@@ -85,9 +120,11 @@ def torso_half_width(t):
     return keys[-1][1]
 
 
-def draw_dressform(w, h):
+def draw_dressform(w, h, pal):
     """Return an RGBA image (w x h) of the dressform, drawn 4x supersampled."""
     from PIL import Image, ImageDraw, ImageFilter
+    LINEN, LINEN_DARK = pal['LINEN'], pal['LINEN_DARK']
+    WOOD, WOOD_DARK, OUTLINE = pal['WOOD'], pal['WOOD_DARK'], pal['OUTLINE']
     S = 4
     W, H = w * S, h * S
     fill = Image.new("RGBA", (W, H), (0, 0, 0, 0))
@@ -145,28 +182,6 @@ def draw_dressform(w, h):
     return outline.resize((w, h), Image.LANCZOS)
 
 
-def frame_boxes(build, W, H):
-    """Yield (x0, y0, x1, y1) pixel boxes for every symbol frame, in whichever
-    vertical orientation actually contains the donor's opaque pixels."""
-    raw = []
-    for s in build["symbols"]:
-        for f in s["frames"]:
-            u0, v0, u1, v1 = f[-4:]
-            raw.append((int(u0 * W), int(u1 * W), int(v0 * H), int(v1 * H),
-                        int((1 - v1) * H), int((1 - v0) * H)))
-    return raw
-
-
-def coverage(px, x0, x1, y0, y1, W, H):
-    total = opaque = 0
-    for y in range(max(y0, 0), min(y1, H), 2):
-        for x in range(max(x0, 0), min(x1, W), 2):
-            total += 1
-            if px[x, y][3] > 10:
-                opaque += 1
-    return opaque / max(total, 1)
-
-
 def generate():
     from PIL import Image
     bd = (CACHE / f"{SRC}_build.bytes").read_bytes()
@@ -176,34 +191,89 @@ def generate():
     assert write_anim(anim) == ad, "anim roundtrip failed"
 
     table = dict(build["hashes"])
-    print("donor symbols:", [table.get(s["hash"], s["hash"]) for s in build["symbols"]])
+    sym = {table.get(s["hash"], s["hash"]): s for s in build["symbols"]}
+    place_s, item_s, ui_s = sym["place"], sym["pedestal_item"], sym["ui"]
+    print("donor symbols:", list(sym))
 
     build["name"] = NEW
     out = ANIM / f"{NEW}_anims" / NEW
     out.mkdir(parents=True, exist_ok=True)
+
+    # --- atlas: our own layout (frame layout in build data is updated to
+    # match), donor confirmed top-down UVs.
+    W, H = 512, 256
+    atlas = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+
+    def uv(x0, y0, x1, y1):
+        return [x0 / W, y0 / H, x1 / W, y1 / H]
+
+    def put(img, x0, y0):
+        atlas.paste(img, (x0, y0), img)
+
+    # place: white silhouette (blueprint + under-construction look)
+    put(draw_dressform(144, 240, GHOST), 0, 0)
+    place_s["frames"][0][7:] = uv(0, 0, 144, 240)
+
+    # pedestal_item (built state): full-colour dressform, and the WORLD
+    # geometry (pivot) copied from `place` so built == blueprint size.
+    put(draw_dressform(144, 240, SOLID), 144, 0)
+    item_s["frames"][0][3:7] = list(place_s["frames"][0][3:7])
+    item_s["frames"][0][7:] = uv(144, 0, 288, 240)
+
+    # ui (build-menu icon): colour dressform in its original box shape
+    put(draw_dressform(108, 148, SOLID), 288, 0)
+    ui_s["frames"][0][7:] = uv(288, 0, 396, 148)
+
+    # torso: transparent placeholder; sourceFrameNum 10 so the element's
+    # frameNum resolves both here and in the worn builds that override it.
+    build["symbols"].append({
+        "hash": TORSO_HASH, "path": item_s["path"], "color": item_s["color"],
+        "flags": item_s["flags"], "numFrames": 1,
+        "frames": [[10, 1, 0, 0.0, 0.0, 16.0, 16.0] + uv(400, 0, 416, 16)],
+    })
+    build["numSymbols"] += 1
+    build["numFrames"] += 1
+    build["hashes"].append((TORSO_HASH, "torso"))
+
+    # --- anim: built state gets place's transform + a garment torso element
+    n_frames = sum(len(a["frames"]) for a in anim["anims"])
+    n_elements = sum(len(f["elements"]) for a in anim["anims"] for f in a["frames"])
+    assert anim["h_frames"] == n_frames and anim["h_elements"] == n_elements, \
+        (anim["h_frames"], n_frames, anim["h_elements"], n_elements)
+
+    ped = next(a for a in anim["anims"] if a["name"] == "pedestal")
+    pla = next(a for a in anim["anims"] if a["name"] == "place")
+    pel = pla["frames"][0]["elements"][0]
+    prect = pla["frames"][0]["rect"]
+    item_hash = item_s["hash"]
+
+    added = 0
+    for fr in ped["frames"]:
+        fr["rect"] = list(prect)
+        base = None
+        for e in fr["elements"]:
+            if e["symbolHash"] == item_hash:
+                e["tx"], e["ty"] = pel["tx"], pel["ty"]
+                base = e
+        assert base is not None
+        torso = dict(base)
+        torso["symbolHash"] = TORSO_HASH
+        if torso["folderHash"] == item_hash:
+            torso["folderHash"] = TORSO_HASH
+        torso["frameNum"] = 10
+        torso["ma"], torso["mb"], torso["mc"], torso["md"] = TORSO_SCALE, 0.0, 0.0, TORSO_SCALE
+        torso["tx"], torso["ty"] = TORSO_TX, TORSO_TY
+        fr["elements"].insert(0, torso)  # listed first = drawn in front
+        added += 1
+    anim["h_elements"] += added
+    anim["maxVisSymbolFrames"] = max(anim["maxVisSymbolFrames"], 2)
+    anim["hashes"].append((TORSO_HASH, "torso"))
+    print(f"torso element: scale={TORSO_SCALE} t=({TORSO_TX:.2f},{TORSO_TY:.2f}) "
+          f"folderHash={'retargeted' if torso['folderHash'] == TORSO_HASH else torso['folderHash']}")
+
     (out / f"{NEW}_build.bytes").write_bytes(write_build(build))
     (out / f"{NEW}_anim.bytes").write_bytes(write_anim(anim))
-
-    img = Image.open(CACHE / f"{SRC}_0.png").convert("RGBA")
-    W, H = img.size
-    px = img.load()
-    boxes = frame_boxes(build, W, H)
-    top = sum(coverage(px, x0, x1, ty0, ty1, W, H) for x0, x1, ty0, ty1, _, _ in boxes)
-    bot = sum(coverage(px, x0, x1, fy0, fy1, W, H) for x0, x1, _, _, fy0, fy1 in boxes)
-    flipped = bot > top
-    print(f"uv orientation: {'bottom-up' if flipped else 'top-down'} "
-          f"(coverage {bot:.2f} vs {top:.2f})")
-
-    for x0, x1, ty0, ty1, fy0, fy1 in boxes:
-        y0, y1 = (fy0, fy1) if flipped else (ty0, ty1)
-        w, h = x1 - x0, y1 - y0
-        if w < 4 or h < 4:
-            continue
-        art = draw_dressform(w, h)
-        img.paste(Image.new("RGBA", (w, h), (0, 0, 0, 0)), (x0, y0))
-        img.paste(art, (x0, y0), art)
-
-    img.save(out / f"{NEW}_0.png")
+    atlas.save(out / f"{NEW}_0.png")
     print("wrote", out)
 
 
