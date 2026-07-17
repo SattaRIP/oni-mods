@@ -210,12 +210,12 @@ namespace ProtectiveWear
                 + " overrode " + dressed + "/" + BodySymbols.Length + " body symbols");
             if (dressed == 0) return;
 
-            KBatchedAnimController icon = occupant.GetComponent<KBatchedAnimController>();
-            if (icon != null)
-            {
-                icon.SetVisiblity(false);
-                hiddenOccupant = occupant;
-            }
+            // The game's own stored-item hide: disables the anim controller
+            // component outright, which the camera-culling system respects
+            // (a mere SetVisiblity(false) gets flipped back on when the
+            // building scrolls into view).
+            Storage.MakeItemInvisible(occupant, true, false);
+            hiddenOccupant = occupant;
         }
 
         // The hidden item icon belongs to the stored garment itself, so it
@@ -224,8 +224,7 @@ namespace ProtectiveWear
         private void ShowHiddenOccupant()
         {
             if (hiddenOccupant == null) return;
-            KBatchedAnimController prev = hiddenOccupant.GetComponent<KBatchedAnimController>();
-            if (prev != null) prev.SetVisiblity(true);
+            Storage.MakeItemInvisible(hiddenOccupant, false, false);
             hiddenOccupant = null;
         }
     }
