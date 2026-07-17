@@ -54,10 +54,10 @@ PARTS = {"torso", "pelvis", "belt", "skirt", "neck", "arm_sleeve",
          "arm_upper", "arm_lower_sleeve", "arm_lower", "cuff", "hand_paint",
          "leg", "leg_skin", "foot", "snapto_headshape", "snapto_hat"}
 
-# linen head geometry: pivot (x, y, w, h) in dupe-art units relative to the
-# snapto_headshape bone (neck top, idle t=(+14.4,-165.4)); spans up to the
-# hat bone (~-286) so picked hats sit on the crown.
-HEAD_PIVOT = (8.0, -60.0, 100.0, 120.0)
+# linen head geometry: the REAL dupe headshape accessory pivot (measured
+# from head_swap_build's headshape_001), so the head is authentic dupe size
+# and hats -- authored against these heads -- sit correctly on the crown.
+HEAD_PIVOT = (-8.5, -60.5, 162.0, 160.0)
 
 # Shift applied to the copied idle-pose transforms: centers the dupe on the
 # footprint and puts its feet on the base disc (dupe feet bottom out at

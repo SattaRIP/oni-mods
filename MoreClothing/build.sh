@@ -12,6 +12,7 @@ echo "==> Generating recoloured kanims..."
 "$VENV_PY" "$SCRIPT_DIR/tools/gen_protective_kanims.py"
 "$VENV_PY" "$SCRIPT_DIR/tools/gen_snazzy_kanims.py"
 "$VENV_PY" "$SCRIPT_DIR/tools/gen_mannequin_kanim.py"
+"$VENV_PY" "$SCRIPT_DIR/tools/gen_worn_feet_kanims.py"
 
 echo "==> Compiling C#..."
 mkdir -p "$SCRIPT_DIR/dist"

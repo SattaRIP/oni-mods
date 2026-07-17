@@ -44,10 +44,10 @@ namespace ProtectiveWear
 
             SingleEntityReceptacle receptacle = go.AddOrGet<OrnamentReceptacle>();
             receptacle.AddDepositTag(GameTags.Clothes);
-            // Chest height on the dressform; only garments without worn torso
-            // art (boots, masks) actually show here -- the rest are drawn ON
-            // the dressform via the torso symbol override below.
-            receptacle.occupyingObjectRelativePosition = new Vector3(0f, 1.25f, -1f);
+            // Mid-statue; only garments with NO worn art at all (vanilla
+            // boots, masks) show as an item here -- everything else is drawn
+            // ON the statue via symbol overrides.
+            receptacle.occupyingObjectRelativePosition = new Vector3(0f, 0.5f, -1f);
 
             go.AddOrGet<DecorProvider>();
             go.AddOrGet<MannequinDecor>();
