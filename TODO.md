@@ -29,3 +29,5 @@
   **bleed/padding** in the repacked atlas, match Klei's atlas packing more closely,
   and/or avoid rewriting UVs (e.g. bake the widened image at the original atlas layout).
   Currently the wire bridges ship with the mild oval-terminal look (scaler).
+
+- [ ] Longer Bridges: longer versions of the heavy-watt joint plates (requested 2026-07-17)

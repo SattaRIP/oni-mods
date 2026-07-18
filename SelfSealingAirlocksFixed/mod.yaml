@@ -1,0 +1,3 @@
+title: "Self-sealing Airlocks (U59 Fix)"
+description: "Doors (except Internal type) seal gas and liquid while closing/closed, so a plain door works as a true airlock. Local rebuild of chromiumboy's Self-Sealing Airlocks / the Revived recompile, ported to the current Sim API (U59-740622) after the original broke with MissingMethodException on SimMessages.SetCellProperties."
+staticID: "SelfSealingAirlocksFixed"

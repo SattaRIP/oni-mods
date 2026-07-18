@@ -1,0 +1,24 @@
+=== TITLE ===
+Self-sealing Airlocks (U59 Fix)
+
+=== DESCRIPTION (paste into uploader) ===
+Doors block gas and liquid while they are closing and closed -- no more puff of chlorine sneaking through a pneumatic door mid-swing. A plain door becomes a true airlock. Internal-type doors and doors pinned Open keep vanilla behavior.
+
+This is chromiumboy's classic Self-Sealing Airlocks, brought back from the dead a second time: the earlier "Self-sealing Airlocks Revived" recompile crashes on the current build (U59-740622) with "MissingMethodException: SimMessages.SetCellProperties(int, byte)" the moment any door spawns. This version is rebuilt from the original source against the current game API (the Sim cell-property calls gained a callback parameter) and ported to Harmony 2 / UserMod2.
+
+Credits:
+- chromiumboy -- original mod and source code: https://github.com/chromiumboy/OxygenNotIncludedMods
+- the Self-sealing Airlocks Revived uploader -- kept the mod alive through the Harmony 2 transition
+
+I claim no ownership of the idea or the original code; if the original author asks, this upload comes down. Source for this build: https://github.com/SattaRIP/oni-mods
+
+=== CHANGE NOTE ===
+Initial upload: rebuild of Self-Sealing Airlocks for U59-740622. Fixes the MissingMethodException on SimMessages.SetCellProperties that crashes older builds on door spawn; ported to Harmony 2 / UserMod2. No behavior changes.
+
+=== UPLOAD STEPS ===
+Same flow as publishing Longer Bridges / Critter Turret:
+1. Steam -> Library -> filter Tools -> "Oxygen Not Included Uploader" (app 636750) -> launch.
+2. Create a NEW item (do not select an existing one).
+3. Content folder: /home/mythraps/.config/unity3d/Klei/Oxygen Not Included/mods/Dev/SelfSealingAirlocksFixed
+4. Preview image: /home/mythraps/Documents/ONI_Mods/SelfSealingAirlocksFixed/preview.png
+5. Paste title, description, change note from this file. Visibility: Public.
