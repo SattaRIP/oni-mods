@@ -27,6 +27,9 @@ mcs \
 echo "==> Generating extended bridge kanims (vanilla art stretched to width)..."
 python3 "$SCRIPT_DIR/tools/gen_extended_kanims.py"
 
+echo "==> Generating wide joint plate kanims (per-cell composition)..."
+"$HOME/.venvs/oni-kanim/bin/python" "$SCRIPT_DIR/tools/gen_jointplate_kanims.py"
+
 echo "==> Packaging mod..."
 cp "$SCRIPT_DIR/mod.yaml" "$SCRIPT_DIR/dist/"
 cp "$SCRIPT_DIR/mod_info.yaml" "$SCRIPT_DIR/dist/"

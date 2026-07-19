@@ -1,0 +1,19 @@
+=== v1.1.0 -- Wide Joint Plates ===
+
+--- CHANGE NOTE (paste in uploader) ---
+v1.1.0: Wide Joint Plates. New in Power: Heavi-Watt Joint Plate (2 Tiles / 3 Tiles) and Conductive Joint Plate (2 Tiles / 3 Tiles) -- run heavy wire through thicker walls with one building. If the "Insulated Joint Plate [FIXED]" mod is active, Insulated 3-Tile versions of both appear as well (that mod already covers 1- and 2-wide; ours deconstruct cleanly, resetting cell insulation). Same research as the vanilla plates; rotatable for vertical runs through floors.
+
+--- DESCRIPTION ADDITION (paste into the description via uploader Update Details; the mod.yaml/dist description already includes it) ---
+NEW in 1.1.0 -- Wide Joint Plates (Power category, next to the vanilla plates):
+- Heavi-Watt Joint Plate (2 Tiles / 3 Tiles)
+- Conductive Joint Plate (2 Tiles / 3 Tiles)
+- Insulated Heavi-Watt / Conductive Joint Plate (3 Tiles) -- appear only when "Insulated Joint Plate [FIXED]" is installed, slotting in beside its Long (2-wide) plates. Insulation matches that mod's mechanism, and unlike it, deconstruction restores the cells' normal heat transfer.
+All unlock with the same research as their vanilla counterparts and rotate for vertical wall runs.
+
+--- UPLOADER STEPS ---
+1. Oxygen Not Included Uploader (tool 636750) -> select "Longer Bridges" (File ID 3751316059) -> Edit.
+2. Tick Update Data -> content folder: /home/mythraps/Documents/ONI_Mods/LongerBridges/dist
+3. Tick Update Details -> append the DESCRIPTION ADDITION above; paste the CHANGE NOTE.
+4. Publish.
+5. Extra image: on the mod's Workshop PAGE in a browser (logged in as owner), use the owner controls to add/edit images and upload:
+   /home/mythraps/Documents/ONI_Mods/LongerBridges/screenshots_jointplates.png

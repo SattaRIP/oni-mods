@@ -62,6 +62,13 @@ namespace MagpieExtension
             BUILDINGS.PLANSUBCATEGORYSORTING[WireRefinedBridge3Config.ID]    = SUBCATEGORY_WIRES;
             BUILDINGS.PLANSUBCATEGORYSORTING[WireRubberBridge2Config.ID]     = SUBCATEGORY_WIRES;
             BUILDINGS.PLANSUBCATEGORYSORTING[WireRubberBridge3Config.ID]     = SUBCATEGORY_WIRES;
+            // Wide joint plates live beside their vanilla 1-tile plates in Power/wires.
+            BUILDINGS.PLANSUBCATEGORYSORTING[WireBridgeHighWattage2Config.ID]               = SUBCATEGORY_WIRES;
+            BUILDINGS.PLANSUBCATEGORYSORTING[WireBridgeHighWattage3Config.ID]               = SUBCATEGORY_WIRES;
+            BUILDINGS.PLANSUBCATEGORYSORTING[WireRefinedBridgeHighWattage2Config.ID]        = SUBCATEGORY_WIRES;
+            BUILDINGS.PLANSUBCATEGORYSORTING[WireRefinedBridgeHighWattage3Config.ID]        = SUBCATEGORY_WIRES;
+            BUILDINGS.PLANSUBCATEGORYSORTING[InsulatedWireBridgeHighWattage3Config.ID]      = SUBCATEGORY_WIRES;
+            BUILDINGS.PLANSUBCATEGORYSORTING[InsulatedWireRefinedBridgeHighWattage3Config.ID] = SUBCATEGORY_WIRES;
 
             // 4-arg overload: (category, building_id, subcategoryID, relativeBuildingId).
             ModUtil.AddBuildingToPlanScreen("Automation", LogicWireBridge2Config.ID,    SUBCATEGORY_WIRES,      "LogicWireBridge");
@@ -84,6 +91,17 @@ namespace MagpieExtension
             ModUtil.AddBuildingToPlanScreen("Power",    WireRefinedBridge3Config.ID,   SUBCATEGORY_WIRES, WireRefinedBridge2Config.ID);
             ModUtil.AddBuildingToPlanScreen("Power",    WireRubberBridge2Config.ID,    SUBCATEGORY_WIRES, "WireRubberBridge");
             ModUtil.AddBuildingToPlanScreen("Power",    WireRubberBridge3Config.ID,    SUBCATEGORY_WIRES, WireRubberBridge2Config.ID);
+
+            // Wide joint plates, each after its 1-tile vanilla plate. The insulated
+            // 3-wides anchor to the Insulated Joint Plate mod's "Long" (2-wide)
+            // entries; with that mod absent they are Deprecated (hidden) anyway,
+            // so a missing anchor just parks the hidden entry at the category end.
+            ModUtil.AddBuildingToPlanScreen("Power", WireBridgeHighWattage2Config.ID,        SUBCATEGORY_WIRES, "WireBridgeHighWattage");
+            ModUtil.AddBuildingToPlanScreen("Power", WireBridgeHighWattage3Config.ID,        SUBCATEGORY_WIRES, WireBridgeHighWattage2Config.ID);
+            ModUtil.AddBuildingToPlanScreen("Power", WireRefinedBridgeHighWattage2Config.ID, SUBCATEGORY_WIRES, "WireRefinedBridgeHighWattage");
+            ModUtil.AddBuildingToPlanScreen("Power", WireRefinedBridgeHighWattage3Config.ID, SUBCATEGORY_WIRES, WireRefinedBridgeHighWattage2Config.ID);
+            ModUtil.AddBuildingToPlanScreen("Power", InsulatedWireBridgeHighWattage3Config.ID,        SUBCATEGORY_WIRES, "LongInsulatedWireBridgeHighWattage");
+            ModUtil.AddBuildingToPlanScreen("Power", InsulatedWireRefinedBridgeHighWattage3Config.ID, SUBCATEGORY_WIRES, "LongInsulatedRefinedWireBridgeHighWattage");
         }
 
         private static void RegisterStrings()
@@ -152,6 +170,30 @@ namespace MagpieExtension
                 "Insulated Conductive Wire Bridge (3-Tile Gap)",
                 "A 5-tile-long insulated conductive wire bridge that lets one wire cross over another with a 3-tile gap.",
                 "Carries high-wattage power across other wires without joining them. Can be run through tile.");
+            Add("WIREBRIDGEHIGHWATTAGE2",
+                "Heavi-Watt Joint Plate (2 Tiles)",
+                "A 2-tile-wide joint plate for running Heavi-Watt Wire through thicker walls.",
+                "Allows Heavi-Watt Wire to pass through two tiles of wall without leaking Gas or Liquid.");
+            Add("WIREBRIDGEHIGHWATTAGE3",
+                "Heavi-Watt Joint Plate (3 Tiles)",
+                "A 3-tile-wide joint plate for running Heavi-Watt Wire through thicker walls.",
+                "Allows Heavi-Watt Wire to pass through three tiles of wall without leaking Gas or Liquid.");
+            Add("WIREREFINEDBRIDGEHIGHWATTAGE2",
+                "Conductive Joint Plate (2 Tiles)",
+                "A 2-tile-wide joint plate for running Conductive Wire through thicker walls.",
+                "Allows Conductive Wire to pass through two tiles of wall without leaking Gas or Liquid.");
+            Add("WIREREFINEDBRIDGEHIGHWATTAGE3",
+                "Conductive Joint Plate (3 Tiles)",
+                "A 3-tile-wide joint plate for running Conductive Wire through thicker walls.",
+                "Allows Conductive Wire to pass through three tiles of wall without leaking Gas or Liquid.");
+            Add("INSULATEDWIREBRIDGEHIGHWATTAGE3",
+                "Insulated Heavi-Watt Joint Plate (3 Tiles)",
+                "A 3-tile-wide insulated joint plate for running Heavi-Watt Wire through thicker walls. Pairs with the Insulated Joint Plate mod's smaller plates.",
+                "Allows Heavi-Watt Wire to pass through three tiles of wall without leaking Gas, Liquid or Heat.");
+            Add("INSULATEDWIREREFINEDBRIDGEHIGHWATTAGE3",
+                "Insulated Conductive Joint Plate (3 Tiles)",
+                "A 3-tile-wide insulated joint plate for running Conductive Wire through thicker walls. Pairs with the Insulated Joint Plate mod's smaller plates.",
+                "Allows Conductive Wire to pass through three tiles of wall without leaking Gas, Liquid or Heat.");
         }
 
         private static void Add(string idUpper, string name, string desc, string effect)
@@ -190,12 +232,18 @@ namespace MagpieExtension
             Reposition("Power",      WireRefinedBridge2Config.ID, WireRefinedBridge3Config.ID);
             Reposition("Power",      "WireRubberBridge",          WireRubberBridge2Config.ID);
             Reposition("Power",      WireRubberBridge2Config.ID,  WireRubberBridge3Config.ID);
+            Reposition("Power",      "WireBridgeHighWattage",        WireBridgeHighWattage2Config.ID);
+            Reposition("Power",      WireBridgeHighWattage2Config.ID, WireBridgeHighWattage3Config.ID);
+            Reposition("Power",      "WireRefinedBridgeHighWattage", WireRefinedBridgeHighWattage2Config.ID);
+            Reposition("Power",      WireRefinedBridgeHighWattage2Config.ID, WireRefinedBridgeHighWattage3Config.ID);
+            Reposition("Power",      "LongInsulatedWireBridgeHighWattage",        InsulatedWireBridgeHighWattage3Config.ID);
+            Reposition("Power",      "LongInsulatedRefinedWireBridgeHighWattage", InsulatedWireRefinedBridgeHighWattage3Config.ID);
         }
 
         // Moves ourId's plan-menu entry to directly after anchorId, in the same
         // per-category list ModUtil.AddBuildingToPlanScreen inserts into. No-op
         // when either entry is missing; idempotent when already in place.
-        private static void Reposition(HashedString category, string anchorId, string ourId)
+        internal static void Reposition(HashedString category, string anchorId, string ourId)
         {
             int ci = BUILDINGS.PLANORDER.FindIndex(p => p.category == category);
             if (ci < 0) return;
@@ -205,6 +253,37 @@ namespace MagpieExtension
             var entry = data[oi];
             data.RemoveAt(oi);
             data.Insert(data.FindIndex(kv => kv.Key == anchorId) + 1, entry);
+        }
+    }
+
+    // The wide joint plates unlock with the same research as their vanilla
+    // 1-tile counterparts, wherever those live this game version (found by
+    // scanning the tech tree rather than hardcoding a tech id).
+    [HarmonyPatch(typeof(Db), "Initialize")]
+    public static class Db_Initialize_JointPlateTechs_Patch
+    {
+        public static void Postfix()
+        {
+            AddToTechOf("WireBridgeHighWattage",
+                WireBridgeHighWattage2Config.ID, WireBridgeHighWattage3Config.ID,
+                InsulatedWireBridgeHighWattage3Config.ID);
+            AddToTechOf("WireRefinedBridgeHighWattage",
+                WireRefinedBridgeHighWattage2Config.ID, WireRefinedBridgeHighWattage3Config.ID,
+                InsulatedWireRefinedBridgeHighWattage3Config.ID);
+        }
+
+        private static void AddToTechOf(string vanillaId, params string[] ids)
+        {
+            foreach (Tech tech in Db.Get().Techs.resources)
+            {
+                if (!tech.unlockedItemIDs.Contains(vanillaId)) continue;
+                foreach (string id in ids)
+                {
+                    if (!tech.unlockedItemIDs.Contains(id))
+                        tech.unlockedItemIDs.Add(id);
+                }
+                return;
+            }
         }
     }
 }
