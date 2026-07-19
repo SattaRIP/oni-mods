@@ -194,6 +194,26 @@ namespace ProtectiveWear
                     if (breath != null) breath.value = breath.GetMax();
                 }
 
+                // Keep the airtight seal asserted for as long as the suit is
+                // worn. The tag is set on equip, but a facade refresh or a
+                // missed equip on save-load could drop it, leaving bionic dupes
+                // exposed to the water shock -- re-adding it here every tick
+                // makes the immunity reliable.
+                if (!w.HasTag(GameTags.HasAirtightSuit))
+                    w.AddTag(GameTags.HasAirtightSuit);
+
+                // A real suit (Atmo/Lead/Jet) worn on top already seals the
+                // dupe, so don't also assemble the Soft Suit helmet/mask -- it
+                // would be redundant and clash with the suit's own headgear.
+                if (SuitInteraction.WearsRealSuit(w))
+                {
+                    SetStage(w, 0);
+                    SetSuitAir(w, false);
+                    SetSlowTopUp(w, false);
+                    dwell[w] = 0f;
+                    continue;
+                }
+
                 int cur;
                 stages.TryGetValue(w, out cur);
                 bool danger = IsDangerous(w);
@@ -415,7 +435,7 @@ namespace ProtectiveWear
     {
         private static readonly HashSet<string> BLOCKED = new HashSet<string>
         {
-            "SoakingWet", "WetFeet", "ColdAir", "WarmAir", "MinorIrritation", "MajorIrritation",
+            "SoakingWet", "WetFeet", "ColdAir", "WarmAir", "MinorIrritation", "MajorIrritation", "PoppedEarDrums",
         };
 
         public static void Postfix(Klei.AI.Effects __instance, Klei.AI.Effect effect, ref bool __result)
