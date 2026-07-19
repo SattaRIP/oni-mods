@@ -41,8 +41,12 @@ namespace ProtectiveWear
 
         public static void Register(Equippable eq)
         {
+            if (eq == null || eq.def == null) return;
+            // Only footwear needs pulling: garments (WarmVest-based) hide under a
+            // suit natively, and managing one here would fight the vest's own hide.
+            if (eq.def.Id != "SnazzyRubberBoots" && eq.def.Id != "SnazzyShoes") return;
             GameObject w = EVAHelmetManager.GetWearer(eq);
-            KAnimFile k = eq != null ? eq.GetBuildOverride() : null;
+            KAnimFile k = eq.GetBuildOverride();
             if (w == null || k == null) return;
             int prio = eq.def != null ? eq.def.BuildOverridePriority : 4;
             if (!tracked.TryGetValue(w, out var m)) { m = new Dictionary<KAnimFile, int>(); tracked[w] = m; }

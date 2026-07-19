@@ -65,7 +65,7 @@ namespace ProtectiveWear
             // (Minor/Major Irritation).
             if (def.EffectImmunites == null)
                 def.EffectImmunites = new List<Effect>();
-            foreach (string effId in new[] { "SoakingWet", "WetFeet", "ColdAir", "WarmAir", "MinorIrritation", "MajorIrritation", "PoppedEarDrums" })
+            foreach (string effId in new[] { "SoakingWet", "WetFeet", "ColdAir", "WarmAir", "MinorIrritation", "MajorIrritation", "PoppedEarDrums", "Sunlight_Burning" })
             {
                 Effect eff = db.effects.Get(effId);
                 if (eff != null && !def.EffectImmunites.Contains(eff))

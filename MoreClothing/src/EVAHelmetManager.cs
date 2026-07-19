@@ -460,7 +460,7 @@ namespace ProtectiveWear
     {
         private static readonly HashSet<string> BLOCKED = new HashSet<string>
         {
-            "SoakingWet", "WetFeet", "ColdAir", "WarmAir", "MinorIrritation", "MajorIrritation", "PoppedEarDrums",
+            "SoakingWet", "WetFeet", "ColdAir", "WarmAir", "MinorIrritation", "MajorIrritation", "PoppedEarDrums", "Sunlight_Burning",
         };
 
         public static void Postfix(Klei.AI.Effects __instance, Klei.AI.Effect effect, ref bool __result)
