@@ -20,6 +20,10 @@ namespace SnazzySwimwear
             def.Id = ID;
             def.Anim = Assets.GetAnim((HashedString)"snazzy_swimwear_item_kanim");
             def.BuildOverride = Assets.GetAnim((HashedString)"body_snazzy_swimwear_kanim");
+            // Vanilla Swimwear (DrySuit) already layers at 4; pin it explicitly
+            // so it stays below a suit's body override (6) regardless of future
+            // base-config changes.
+            def.BuildOverridePriority = 4;
 
             System.Action<Equippable> baseEquip = def.OnEquipCallBack;
             System.Action<Equippable> baseUnequip = def.OnUnequipCallBack;
