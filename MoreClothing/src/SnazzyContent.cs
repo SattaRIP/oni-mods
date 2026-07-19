@@ -23,7 +23,7 @@ namespace SnazzySwimwear
 
             Add(SnazzySwimwearConfig.ID, "Snazzy Swimwear",
                 "The same practical wetsuit, refashioned with gold sequin trim.",
-                "A refashioned Swimwear. Keeps you swimming and dry-footed, and looks a great deal better doing it.",
+                "A refashioned Swimwear. Shrugs off the soggy morale hit from wading through liquid, and looks a great deal better doing it.",
                 "Swimwear");
             Add(SnazzyRubberBootsConfig.ID, "Snazzy Rubber Boots",
                 "Rubber boots given a gold sequin finish at the Refashionator.",
