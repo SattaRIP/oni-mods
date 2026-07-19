@@ -21,10 +21,19 @@ plays with vanilla Atmo/Lead/Jet Suits.
 - **Soft Suit now blocks Popped Eardrums** (over-pressure damage), matching
   the vanilla suits.
 
-- **Soft Suit helmet/mask stops deploying under a real suit.** If a dupe wears
-  an Atmo/Lead/Jet Suit on top of a Soft Suit, the suit already seals them, so
-  the Soft Suit's helmet and mask no longer redundantly assemble and clash
-  with the suit's own headgear.
+- **Soft Suit + real suit now render correctly.** If a dupe wears an
+  Atmo/Lead/Jet Suit over a Soft Suit, the *suit's own* helmet shows and the
+  Soft Suit's mask is dropped (previously the Soft Suit's retract hid the
+  suit's helmet too, so no helmet appeared at all).
+
+- **Snazzy gear hides under suits.** The Snazzy Swimwear recolour carried the
+  vanilla wetsuit's foot and waist symbols, which the Atmo Suit body has no
+  art for — so they poked through and the suit looked invisible. Those symbols
+  are dropped now, so the swimwear hides cleanly under any suit, like a normal
+  vest.
+
+- **Soft Suit mask is now just the cup** — the oxygen hose and air-puff on the
+  mask have been trimmed off, leaving only the clean mask over the face.
 
 ## Soft Suit: faster to get back on your feet
 

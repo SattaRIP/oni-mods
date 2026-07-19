@@ -109,7 +109,11 @@ namespace ProtectiveWear
 
             collarSymbol = GetSym("atmo_helmet_clear_kanim", COLLAR_TARGET);
             KAnim.Build.Symbol domeFinal = GetSym("atmo_helmet_clear_kanim", DOME_TARGET);
-            KAnim.Build.Symbol maskFinal = GetSym("mask_oxygen_kanim", MASK_TARGET);
+            // Nozzle-free mask (just the cup, hose/puff stripped) -- see
+            // gen_protective_kanims.strip_nozzle. Falls back to the vanilla mask
+            // if the generated kanim is somehow missing.
+            KAnim.Build.Symbol maskFinal = GetSym("eva_mask_kanim", MASK_TARGET)
+                                            ?? GetSym("mask_oxygen_kanim", MASK_TARGET);
 
             // Sliding in-betweens; if a generated kanim is missing, fall back
             // to the seated art so the sequence degrades to a snap, not a hole.

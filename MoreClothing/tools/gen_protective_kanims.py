@@ -58,8 +58,38 @@ JOBS = {
 SLIDE_SIGN = 1.0
 SLIDES = {
     "atmo_helmet_clear": [("eva_dome_s1", 0.9), ("eva_dome_s2", 0.45)],
-    "mask_oxygen":       [("eva_mask_s1", -0.5)],
+    # eva_mask = the seated nozzle-less mask (no shift); eva_mask_s1 = its slide-in.
+    "mask_oxygen":       [("eva_mask", 0.0), ("eva_mask_s1", -0.5)],
 }
+# Sources whose texture gets the hose/nozzle stripped before use, leaving just
+# the mask cup (user request). The gas-mask cup is desaturated grey while the
+# coiled hose is reddish and the air-puff cyan, so a saturation erase removes
+# the coloured nozzle; a morphological OPEN then drops the remaining thin dark
+# hose stubs while keeping the bulky cup (and its own dark outline).
+MASK_STRIP = {"mask_oxygen"}
+
+
+def strip_nozzle(img):
+    from PIL import ImageFilter
+    img = img.convert("RGBA")
+    w, h = img.size
+    px = img.load()
+    for y in range(h):
+        for x in range(w):
+            r, g, b, a = px[x, y]
+            if not a:
+                continue
+            mx, mn = max(r, g, b), min(r, g, b)
+            if mx and (mx - mn) / mx > 0.28:   # coloured hose/puff -> gone
+                px[x, y] = (0, 0, 0, 0)
+    alpha = img.split()[3]
+    opened = alpha.filter(ImageFilter.MinFilter(7)).filter(ImageFilter.MaxFilter(7))
+    op = opened.load()
+    for y in range(h):
+        for x in range(w):
+            if op[x, y] < 40:              # thin stub outside the opened cup
+                px[x, y] = (0, 0, 0, 0)
+    return img
 
 
 def hsv(r, g, b):
@@ -316,7 +346,11 @@ def generate_slides():
             for tex in sorted(CACHE.glob(f"{src}_*.png")):
                 idx = tex.stem[len(src) + 1:]
                 if idx.isdigit():
-                    shutil.copyfile(tex, out / f"{new_name}_{idx}.png")
+                    if src in MASK_STRIP:
+                        from PIL import Image
+                        strip_nozzle(Image.open(tex)).save(out / f"{new_name}_{idx}.png")
+                    else:
+                        shutil.copyfile(tex, out / f"{new_name}_{idx}.png")
             print("wrote", out)
 
 
