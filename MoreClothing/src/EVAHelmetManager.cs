@@ -430,6 +430,7 @@ namespace ProtectiveWear
         public static void Postfix(float dt)
         {
             EVAHelmetManager.Tick(dt);
+            SuitInteraction.Tick(dt);
         }
     }
 

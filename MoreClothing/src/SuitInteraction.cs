@@ -28,26 +28,69 @@ namespace ProtectiveWear
             Assignable a = eq.GetAssignable(Db.Get().AssignableSlots.Suit);
             return a != null;
         }
-    }
 
-    // Hide our worn garment/footwear art while a real suit is worn. The Atmo
-    // Suit body build (body_oxygen) covers most symbols at a higher priority (6)
-    // than clothing (4), but it has NO foot/belt symbol -- so our full-body
-    // recolours left gold bits poking through the suit's feet/waist, and the
-    // suit read as "not showing". Returning a null build override for our items
-    // while suited drops them from the composite, so the suit renders clean. The
-    // game re-queries this whenever equipment changes, so it flips back when the
-    // suit comes off.
-    [HarmonyPatch(typeof(Equippable), "GetBuildOverride")]
-    public static class Equippable_GetBuildOverride_HideUnderSuit
-    {
-        public static void Postfix(Equippable __instance, ref KAnimFile __result)
+        // Worn-art build overrides we're tracking, keyed by wearer, plus their
+        // priority so we can restore them. Vests apply their build through the
+        // ClothingWearer path (not GetBuildOverride), and the game doesn't drop
+        // ours when a suit goes on -- so we pull it off the dupe's controller
+        // directly while suited and add it back afterwards.
+        private static readonly Dictionary<GameObject, Dictionary<KAnimFile, int>> tracked =
+            new Dictionary<GameObject, Dictionary<KAnimFile, int>>();
+        private static readonly HashSet<GameObject> pulledWearers = new HashSet<GameObject>();
+        private static float timer;
+
+        public static void Register(Equippable eq)
         {
-            if (__result == null || __instance == null || __instance.def == null) return;
-            if (!SuitInteraction.WornArtItems.Contains(__instance.def.Id)) return;
-            GameObject w = EVAHelmetManager.GetWearer(__instance);
-            if (w != null && SuitInteraction.WearsRealSuit(w))
-                __result = null;
+            GameObject w = EVAHelmetManager.GetWearer(eq);
+            KAnimFile k = eq != null ? eq.GetBuildOverride() : null;
+            if (w == null || k == null) return;
+            int prio = eq.def != null ? eq.def.BuildOverridePriority : 4;
+            if (!tracked.TryGetValue(w, out var m)) { m = new Dictionary<KAnimFile, int>(); tracked[w] = m; }
+            m[k] = prio;
+        }
+
+        public static void Unregister(Equippable eq)
+        {
+            GameObject w = EVAHelmetManager.GetWearer(eq);
+            KAnimFile k = eq != null ? eq.GetBuildOverride() : null;
+            if (w == null || k == null) return;
+            if (tracked.TryGetValue(w, out var m))
+            {
+                m.Remove(k);
+                if (m.Count == 0) { tracked.Remove(w); pulledWearers.Remove(w); }
+            }
+        }
+
+        public static void Tick(float dt)
+        {
+            if (tracked.Count == 0) return;
+            timer += dt;
+            if (timer < 0.2f) return;
+            timer = 0f;
+            foreach (var kv in new List<KeyValuePair<GameObject, Dictionary<KAnimFile, int>>>(tracked))
+            {
+                GameObject w = kv.Key;
+                if (w == null) { tracked.Remove(w); pulledWearers.Remove(w); continue; }
+                SymbolOverrideController soc = w.GetComponent<SymbolOverrideController>();
+                if (soc == null) continue;
+                bool suited = WearsRealSuit(w);
+                bool isPulled = pulledWearers.Contains(w);
+                if (suited && !isPulled)
+                {
+                    foreach (var pair in kv.Value)
+                        SymbolOverrideControllerUtil.TryRemoveBuildOverride(soc, pair.Key.GetData(), pair.Value);
+                    pulledWearers.Add(w);
+                    soc.ApplyOverrides();
+                }
+                else if (!suited && isPulled)
+                {
+                    foreach (var pair in kv.Value)
+                        SymbolOverrideControllerUtil.AddBuildOverride(soc, pair.Key.GetData(), pair.Value);
+                    pulledWearers.Remove(w);
+                    soc.ApplyOverrides();
+                }
+            }
         }
     }
+
 }
