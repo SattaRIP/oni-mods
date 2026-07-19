@@ -25,8 +25,11 @@ REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO.parent / "MagpieExtensionRonivans" / "tools"))
 from gen_extended_kanims import parse_build, write_build
 
-SRC_DIR = REPO / "anim" / "body_snazzy_swimwear_anims" / "body_snazzy_swimwear"
-SRC = "body_snazzy_swimwear"
+# Borrow the build skeleton (incl. the 'foot' symbol) from the vanilla wetsuit
+# cache, NOT the generated body_snazzy_swimwear -- that one now has 'foot'
+# stripped so it hides cleanly under suits, which would leave no donor here.
+SRC_DIR = REPO / "tools" / "vanilla_kanim_cache"
+SRC = "body_wetsuit"
 
 GOLD = (222, 178, 55)
 GOLD_DARK = (168, 128, 30)

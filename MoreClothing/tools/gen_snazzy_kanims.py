@@ -32,6 +32,16 @@ ANIM = REPO / "anim"
 GOLD_H, GOLD_S = 0.145, 0.755  # sampled from the Snazzy Suit (shirt_decor01) -- swimwear
 BOOT_GOLD_H, BOOT_GOLD_S = 0.115, 0.95  # richer, deeper amber-gold for the rubber boots
 
+# Symbols to drop from a generated build. The worn Swimwear body recolours the
+# whole vanilla wetsuit build, which includes 'foot' and 'belt' -- but the Atmo
+# Suit's body (body_oxygen) has NO foot/belt symbol, so under a suit those two
+# poked through and the suit read as "invisible". Dropping them makes the
+# swimwear behave like a normal vest (fully hidden under any suit); the feet and
+# waist were never things swimwear should recolour anyway.
+STRIP_SYMBOLS = {
+    "body_snazzy_swimwear": {"foot", "belt"},
+}
+
 # vanilla source -> list of (new build name, recolour mode)
 JOBS = {
     "wetsuit_item":      [("snazzy_swimwear_item", "red_to_gold")],
@@ -177,6 +187,13 @@ def generate():
         for new_name, mode in outputs:
             build = parse_build(bd)          # fresh parse per output (we rename it)
             build["name"] = new_name         # symbols preserved, only the build name changes
+
+            drop = STRIP_SYMBOLS.get(new_name)
+            if drop:
+                drop_hashes = {h for h, n in build["hashes"] if n in drop}
+                build["symbols"] = [s for s in build["symbols"] if s["hash"] not in drop_hashes]
+                build["numSymbols"] = len(build["symbols"])
+                build["numFrames"] = sum(s["numFrames"] for s in build["symbols"])
             out = ANIM / f"{new_name}_anims" / new_name
             out.mkdir(parents=True, exist_ok=True)
             (out / f"{new_name}_build.bytes").write_bytes(write_build(build))
