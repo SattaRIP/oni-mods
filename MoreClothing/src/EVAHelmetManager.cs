@@ -207,7 +207,7 @@ namespace ProtectiveWear
                 // would be redundant and clash with the suit's own headgear.
                 if (SuitInteraction.WearsRealSuit(w))
                 {
-                    SetStage(w, 0);
+                    RetractForRealSuit(w);
                     SetSuitAir(w, false);
                     SetSlowTopUp(w, false);
                     dwell[w] = 0f;
@@ -306,6 +306,26 @@ namespace ProtectiveWear
                 slowTopUp.Remove(dupe);
                 attrs.Remove(reserveTopUpDrain);
             }
+        }
+
+        // A real suit (Atmo/Lead/Jet) is worn on top: drop OUR headgear so the
+        // suit's own helmet shows, but keep the mask off. The Atmo Suit draws
+        // its dome on snapto_neck, so we must leave that symbol VISIBLE after
+        // removing our override (SetStage(0) force-hid it, which killed the
+        // suit's helmet too). snapto_goggles has no suit art, so hide it.
+        private static void RetractForRealSuit(GameObject dupe)
+        {
+            int cur;
+            if (!stages.TryGetValue(dupe, out cur) || cur == 0) return;
+            SymbolOverrideController soc = dupe.GetComponent<SymbolOverrideController>();
+            KBatchedAnimController kbac = dupe.GetComponent<KBatchedAnimController>();
+            if (soc == null || kbac == null) { stages.Remove(dupe); return; }
+            SymbolOverrideControllerUtil.TryRemoveSymbolOverride(soc, (HashedString)COLLAR_TARGET, PRIORITY);
+            SymbolOverrideControllerUtil.TryRemoveSymbolOverride(soc, (HashedString)DOME_TARGET, PRIORITY);
+            kbac.SetSymbolVisiblity((KAnimHashedString)DOME_TARGET, true);   // let the suit's dome show
+            SymbolOverrideControllerUtil.TryRemoveSymbolOverride(soc, (HashedString)MASK_TARGET, PRIORITY);
+            kbac.SetSymbolVisiblity((KAnimHashedString)MASK_TARGET, false);  // suit has no mask symbol
+            stages.Remove(dupe);
         }
 
         private static void SetStage(GameObject dupe, int stage)
