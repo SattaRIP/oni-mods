@@ -28,6 +28,11 @@ namespace ProtectiveWear
     {
         public const string ID = "EVASuit";
 
+        // Extra breath reserve the suit grants over a normal dupe's lungful.
+        // Shared so the helmet manager knows where "normal" ends for its
+        // two-tier refill (fast up to normal, slow for the bonus above it).
+        public const float BREATH_BONUS = 200f;
+
         // Delegate to the Warm Sweater: gives us the clothing slot, a worn body
         // kanim, and its own base cold insulation -- all fitting for a suit.
         private readonly WarmVestConfig vanilla = new WarmVestConfig();
@@ -48,7 +53,7 @@ namespace ProtectiveWear
                 new KeyValuePair<string, float>(db.Attributes.Insulation.Id, 30f),
                 new KeyValuePair<string, float>(db.Attributes.ScaldingThreshold.Id, 15f),
                 new KeyValuePair<string, float>(db.Attributes.RadiationResistance.Id, 0.30f),
-                new KeyValuePair<string, float>(db.Amounts.Breath.maxAttribute.Id, 200f),
+                new KeyValuePair<string, float>(db.Amounts.Breath.maxAttribute.Id, BREATH_BONUS),
                 new KeyValuePair<string, float>(db.Amounts.Bladder.deltaAttribute.Id, -0.05f),
             };
             foreach (var m in mods)

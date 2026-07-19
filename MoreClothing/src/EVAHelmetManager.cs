@@ -52,6 +52,11 @@ namespace ProtectiveWear
         // dupes still panic and go find real oxygen before they drop. Kept
         // generous so they turn back with plenty of margin for the walk out.
         private const float LOW_AIR_FRACTION = 0.25f;
+        // Refilling breath happens in two tiers: up to a normal dupe's lungful
+        // it catches up at the full vanilla breathing rate, so the wearer is
+        // mission-ready fast; above that (the suit's BREATH_BONUS reserve) it
+        // backfills passively at this fraction of the normal rate.
+        private const float RESERVE_REFILL_FRACTION = 0.4f;
 
         private static readonly HashSet<GameObject> wearers = new HashSet<GameObject>();
         // Assembly stage per wearer (see table above); absent = 0.
@@ -66,6 +71,9 @@ namespace ProtectiveWear
         // CanBreath patch below; carries the replacement breath drain.
         private static readonly HashSet<GameObject> suitAir = new HashSet<GameObject>();
         private static Klei.AI.AttributeModifier suitAirDrain;
+        // Wearers whose over-normal reserve is currently backfilling slowly.
+        private static readonly HashSet<GameObject> slowTopUp = new HashSet<GameObject>();
+        private static Klei.AI.AttributeModifier reserveTopUpDrain;
         private static float timer;
 
         // Wearers whose breath reserve still needs its one-time top-up. The
@@ -153,6 +161,7 @@ namespace ProtectiveWear
             pendingBreath.Remove(w);
             dwell.Remove(w);
             SetSuitAir(w, false);
+            SetSlowTopUp(w, false);
             w.RemoveTag(GameTags.HasAirtightSuit);
             SetStage(w, 0);   // suit off = everything off at once
         }
@@ -176,6 +185,7 @@ namespace ProtectiveWear
                     pendingBreath.Remove(w);
                     dwell.Remove(w);
                     suitAir.Remove(w);
+                    slowTopUp.Remove(w);
                     continue;
                 }
                 if (pendingBreath.Remove(w))
@@ -208,6 +218,15 @@ namespace ProtectiveWear
                 float frac = breathAmt != null && breathAmt.GetMax() > 0f
                     ? breathAmt.value / breathAmt.GetMax() : 0f;
                 SetSuitAir(w, stage == MAX_STAGE && !IsBreathable(w) && frac > LOW_AIR_FRACTION);
+
+                // Two-tier refill: while in oxygen, catch up to a normal dupe's
+                // lungful at full speed, then slow the fill for the reserve above
+                // it. "Normal" = the current max minus the suit's bonus.
+                float normalBreath = breathAmt != null
+                    ? Mathf.Max(0f, breathAmt.GetMax() - EVASuitConfig.BREATH_BONUS) : 0f;
+                bool toppingReserve = breathAmt != null && IsBreathable(w)
+                    && breathAmt.value < breathAmt.GetMax() && breathAmt.value >= normalBreath;
+                SetSlowTopUp(w, toppingReserve);
             }
         }
 
@@ -237,6 +256,35 @@ namespace ProtectiveWear
             {
                 suitAir.Remove(dupe);
                 attrs.Remove(suitAirDrain);
+            }
+        }
+
+        // Slow the breathing-state refill while topping up the over-normal
+        // reserve, so the bonus air backfills at RESERVE_REFILL_FRACTION speed.
+        private static void SetSlowTopUp(GameObject dupe, bool on)
+        {
+            if (dupe == null || on == slowTopUp.Contains(dupe)) return;
+            if (reserveTopUpDrain == null)
+            {
+                // Breathing adds +BREATH_RATE; subtract most of it so the net
+                // refill above normal is RESERVE_REFILL_FRACTION * BREATH_RATE.
+                float rate = TUNING.DUPLICANTSTATS.STANDARD.Breath.BREATH_RATE;
+                reserveTopUpDrain = new Klei.AI.AttributeModifier(
+                    Db.Get().Amounts.Breath.deltaAttribute.Id,
+                    -(1f - RESERVE_REFILL_FRACTION) * rate,
+                    "Soft Suit reserve top-up", false, false, false);
+            }
+            Klei.AI.Attributes attrs = Klei.AI.ModifiersExtensions.GetAttributes(dupe);
+            if (attrs == null) return;
+            if (on)
+            {
+                slowTopUp.Add(dupe);
+                attrs.Add(reserveTopUpDrain);
+            }
+            else
+            {
+                slowTopUp.Remove(dupe);
+                attrs.Remove(reserveTopUpDrain);
             }
         }
 
