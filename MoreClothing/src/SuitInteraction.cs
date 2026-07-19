@@ -6,18 +6,19 @@ namespace ProtectiveWear
 {
     public static class SuitInteraction
     {
-        // Our garments/footwear that carry worn-body art. When a real suit is
-        // worn on top, this art must yield so the suit renders instead of our
-        // clothing poking through the symbols the suit body doesn't cover
-        // (e.g. foot, belt).
-        public static readonly HashSet<string> WornArtItems = new HashSet<string>
+        // Footwear whose worn foot art must yield to a real suit. (Garments are
+        // handled at the config level -- Snazzy Swimwear is WarmVest-based, which
+        // hides under suits natively; the Soft Suit retracts its own headgear.)
+        // Footwear has no vanilla vest-handler, so it applies its build override
+        // through the generic Equippable.GetBuildOverride path -- which we can
+        // intercept below.
+        public static readonly HashSet<string> FootwearArt = new HashSet<string>
         {
-            "SnazzySwimwear", "SnazzyRubberBoots", "SnazzyShoes", "EVASuit", "UpgradedWarmCoat",
+            "SnazzyRubberBoots", "SnazzyShoes",
         };
 
         // True when the dupe has an item in the SUIT slot (Atmo/Lead/Jet Suit).
-        // The Soft Suit lives in the CLOTHING slot, so this is false for it --
-        // exactly what we want, so a Soft-Suit-only dupe isn't treated as suited.
+        // The Soft Suit lives in the CLOTHING slot, so this is false for it.
         public static bool WearsRealSuit(GameObject dupe)
         {
             if (dupe == null) return false;
@@ -28,73 +29,23 @@ namespace ProtectiveWear
             Assignable a = eq.GetAssignable(Db.Get().AssignableSlots.Suit);
             return a != null;
         }
-
-        // Worn-art build overrides we're tracking, keyed by wearer, plus their
-        // priority so we can restore them. Vests apply their build through the
-        // ClothingWearer path (not GetBuildOverride), and the game doesn't drop
-        // ours when a suit goes on -- so we pull it off the dupe's controller
-        // directly while suited and add it back afterwards.
-        private static readonly Dictionary<GameObject, Dictionary<KAnimFile, int>> tracked =
-            new Dictionary<GameObject, Dictionary<KAnimFile, int>>();
-        private static readonly HashSet<GameObject> pulledWearers = new HashSet<GameObject>();
-        private static float timer;
-
-        public static void Register(Equippable eq)
-        {
-            if (eq == null || eq.def == null) return;
-            // Only footwear needs pulling: garments (WarmVest-based) hide under a
-            // suit natively, and managing one here would fight the vest's own hide.
-            if (eq.def.Id != "SnazzyRubberBoots" && eq.def.Id != "SnazzyShoes") return;
-            GameObject w = EVAHelmetManager.GetWearer(eq);
-            KAnimFile k = eq.GetBuildOverride();
-            if (w == null || k == null) return;
-            int prio = eq.def != null ? eq.def.BuildOverridePriority : 4;
-            if (!tracked.TryGetValue(w, out var m)) { m = new Dictionary<KAnimFile, int>(); tracked[w] = m; }
-            m[k] = prio;
-        }
-
-        public static void Unregister(Equippable eq)
-        {
-            GameObject w = EVAHelmetManager.GetWearer(eq);
-            KAnimFile k = eq != null ? eq.GetBuildOverride() : null;
-            if (w == null || k == null) return;
-            if (tracked.TryGetValue(w, out var m))
-            {
-                m.Remove(k);
-                if (m.Count == 0) { tracked.Remove(w); pulledWearers.Remove(w); }
-            }
-        }
-
-        public static void Tick(float dt)
-        {
-            if (tracked.Count == 0) return;
-            timer += dt;
-            if (timer < 0.2f) return;
-            timer = 0f;
-            foreach (var kv in new List<KeyValuePair<GameObject, Dictionary<KAnimFile, int>>>(tracked))
-            {
-                GameObject w = kv.Key;
-                if (w == null) { tracked.Remove(w); pulledWearers.Remove(w); continue; }
-                SymbolOverrideController soc = w.GetComponent<SymbolOverrideController>();
-                if (soc == null) continue;
-                bool suited = WearsRealSuit(w);
-                bool isPulled = pulledWearers.Contains(w);
-                if (suited && !isPulled)
-                {
-                    foreach (var pair in kv.Value)
-                        SymbolOverrideControllerUtil.TryRemoveBuildOverride(soc, pair.Key.GetData(), pair.Value);
-                    pulledWearers.Add(w);
-                    soc.ApplyOverrides();
-                }
-                else if (!suited && isPulled)
-                {
-                    foreach (var pair in kv.Value)
-                        SymbolOverrideControllerUtil.AddBuildOverride(soc, pair.Key.GetData(), pair.Value);
-                    pulledWearers.Remove(w);
-                    soc.ApplyOverrides();
-                }
-            }
-        }
     }
 
+    // Drop our footwear's worn art from the render while a real suit is worn, so
+    // an Atmo/Lead/Jet Suit shows cleanly instead of the boots hijacking the
+    // dupe. The wearable accessorizer calls GetBuildOverride when composing the
+    // dupe, and re-composes on any equipment change, so this flips back when the
+    // suit comes off.
+    [HarmonyPatch(typeof(Equippable), "GetBuildOverride")]
+    public static class Equippable_GetBuildOverride_FootwearUnderSuit
+    {
+        public static void Postfix(Equippable __instance, ref KAnimFile __result)
+        {
+            if (__result == null || __instance == null || __instance.def == null) return;
+            if (!SuitInteraction.FootwearArt.Contains(__instance.def.Id)) return;
+            GameObject w = EVAHelmetManager.GetWearer(__instance);
+            if (w != null && SuitInteraction.WearsRealSuit(w))
+                __result = null;
+        }
+    }
 }

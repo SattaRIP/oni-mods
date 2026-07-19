@@ -38,15 +38,10 @@ namespace SnazzySwimwear
                 Db.Get().BuildingAttributes.Decor.Id, decor, description, false, false, true);
             dp.decor.Add(mod);
             Applied[eq] = mod;
-
-            // Track this garment/footwear so its worn art gets pulled while a
-            // real suit is worn on top (see ProtectiveWear.SuitInteraction).
-            ProtectiveWear.SuitInteraction.Register(eq);
         }
 
         public static void Remove(Equippable eq)
         {
-            ProtectiveWear.SuitInteraction.Unregister(eq);
             if (eq == null || !Applied.TryGetValue(eq, out AttributeModifier mod)) return;
             Applied.Remove(eq);
             GameObject wearer = GetWearer(eq);
